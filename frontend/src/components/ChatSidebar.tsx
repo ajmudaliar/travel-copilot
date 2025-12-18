@@ -164,7 +164,7 @@ export function ChatSidebar({ clientId }: ChatSidebarProps) {
       </div>
       <StylesheetProvider
         radius={1}
-        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontFamily="system-ui, -apple-system, sans-serif"
         variant="solid"
         color="#667eea"
       />

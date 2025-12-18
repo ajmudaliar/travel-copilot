@@ -1,8 +1,5 @@
 /* Travel Copilot - Main App Styles */
 
-/* Import Inter font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
 /* Reset and base styles */
 * {
   box-sizing: border-box;
@@ -235,16 +232,51 @@ body,
   opacity: 0.8;
 }
 
+/* Resize handle */
+.resize-handle {
+  width: 4px;
+  background: transparent;
+  cursor: col-resize;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 40px;
+  background: #d1d5db;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.resize-handle:hover::after,
+.resize-handle--active::after {
+  opacity: 1;
+}
+
+.resize-handle:hover,
+.resize-handle--active {
+  background: rgba(102, 126, 234, 0.1);
+}
+
 /* Chat sidebar */
 .chat-aside {
   width: 400px;
-  min-width: 350px;
-  max-width: 450px;
+  min-width: 300px;
+  max-width: 600px;
   background: white;
-  border-left: 1px solid #e0e0e0;
+  border-left: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 /* Chat sidebar inner styles */
