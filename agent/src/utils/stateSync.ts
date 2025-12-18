@@ -44,14 +44,3 @@ export async function emitStateUpdate(): Promise<void> {
   }
 }
 
-/**
- * Get the current travel state.
- * Useful for tools that need to report state.
- */
-export function getCurrentState(): TravelStatePayload {
-  return {
-    trips: bot.state.trips,
-    selectedTripId: bot.state.selectedTripId,
-    places: bot.state.places,
-  };
-}
