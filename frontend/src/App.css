@@ -1,5 +1,8 @@
 /* Travel Copilot - Main App Styles */
 
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
 /* Reset and base styles */
 * {
   box-sizing: border-box;
@@ -254,21 +257,19 @@ body,
 .connection-status {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 0.85rem;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 
 .status-text {
-  color: #6b7280;
+  color: #9ca3af;
 }
 
 .chat-container {
@@ -286,14 +287,14 @@ body,
   color: #6b7280;
 }
 
-/* Chat header */
+/* Chat header - matches trip panel style */
 .chat-header {
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  padding: 1rem;
+  background: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .chat-header-content {
@@ -301,30 +302,32 @@ body,
 }
 
 .chat-header h3 {
-  margin: 0 0 0.15rem 0;
-  font-size: 1rem;
+  margin: 0;
+  font-size: 0.9rem;
   font-weight: 600;
+  color: #374151;
 }
 
 .chat-header p {
-  margin: 0;
+  margin: 0.15rem 0 0 0;
   font-size: 0.75rem;
-  opacity: 0.9;
+  color: #9ca3af;
 }
 
 .new-conversation-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: none;
+  color: #667eea;
+  padding: 0.35rem 0.6rem;
   border-radius: 6px;
   font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .new-conversation-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(102, 126, 234, 0.1);
 }
 
 /* Configuration warning */
@@ -389,6 +392,12 @@ body,
   height: 100%;
 }
 
+/* Container styling */
+.bpContainer {
+  border-radius: 0 !important;
+  border: none !important;
+}
+
 /* Hide bot avatar */
 .bpMessageAvatarContainer {
   display: none !important;
@@ -400,6 +409,15 @@ body,
   max-width: 100%;
 }
 
+/* User message styling */
+.bpMessageBlocksBubble[data-direction="outgoing"] {
+  background-color: rgba(102, 126, 234, 0.1);
+  color: #374151;
+  border-radius: 20px;
+  padding: 0.6rem 1rem;
+  font-size: 12px;
+}
+
 /* Adjust message row padding */
 .bpMessageBlocksRow {
   padding: var(--bpSpacing-2) var(--bpSpacing-4);
@@ -407,4 +425,25 @@ body,
 
 .bpMessageListViewport {
   padding-left: 0;
+}
+
+/* Hide the marquee/welcome message */
+.bpMessageListMarqueeContainer {
+  display: none;
+}
+
+/* Typing indicator */
+.bpTypingIndicatorContainer {
+  padding: var(--bpSpacing-2) var(--bpSpacing-4);
+  background-color: transparent;
+}
+
+
+/* CSS variables override */
+:root .bpReset {
+  --bpPrimary-500: #667eea;
+  --bpPrimary-600: #5a67d8;
+  --bpFontSize-base: 14px;
+  --bpFontSize-sm: 13px;
+  --bpFontSize-xs: 12px;
 }
