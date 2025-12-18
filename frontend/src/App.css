@@ -388,3 +388,23 @@ body,
 .chat-container [data-testid="container"] {
   height: 100%;
 }
+
+/* Hide bot avatar */
+.bpMessageAvatarContainer {
+  display: none !important;
+}
+
+/* Remove background from bot messages */
+.bpMessageBlocksBubble[data-direction="incoming"] {
+  background-color: transparent;
+  max-width: 100%;
+}
+
+/* Adjust message row padding */
+.bpMessageBlocksRow {
+  padding: var(--bpSpacing-2) var(--bpSpacing-4);
+}
+
+.bpMessageListViewport {
+  padding-left: 0;
+}
