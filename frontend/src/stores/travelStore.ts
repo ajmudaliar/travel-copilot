@@ -16,9 +16,6 @@ interface TravelStore extends TravelState {
   setSearchResults: (results: Place[]) => void;
   setIsSearching: (isSearching: boolean) => void;
 
-  // Sync state from bot
-  syncFromBot: (state: Partial<TravelState>) => void;
-
   // Computed
   getSelectedTrip: () => Trip | undefined;
   getPlacesForTrip: (tripId: string) => Place[];
@@ -74,13 +71,6 @@ export const useTravelStore = create<TravelStore>((set, get) => ({
   // Search actions
   setSearchResults: (results) => set({ searchResults: results }),
   setIsSearching: (isSearching) => set({ isSearching }),
-
-  // Sync from bot (used when receiving customEvent)
-  syncFromBot: (botState) =>
-    set((state) => ({
-      ...state,
-      ...botState,
-    })),
 
   // Computed getters
   getSelectedTrip: () => {

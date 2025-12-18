@@ -9,6 +9,7 @@ import { Table, z } from "@botpress/runtime";
 export const tripsTable = new Table({
   name: "tripsTable",
   columns: {
+    userId: z.string().describe("Owner user ID"),
     name: z.string().describe("Trip name"),
     description: z.string().optional().describe("Trip description"),
     centerLatitude: z.number().describe("Center latitude for map view"),

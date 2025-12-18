@@ -1,6 +1,7 @@
-import { Autonomous, bot, z } from "@botpress/runtime";
+import { Autonomous, z } from "@botpress/runtime";
 import { tripsTable } from "../tables/trips";
-import { emitStateUpdate } from "../utils/stateSync";
+import { notifyRefreshTrips, notifySelectTrip } from "../utils/stateSync";
+import { getCurrentUserId } from "../utils/context";
 
 /**
  * Trip management tools for the AI to use in conversations.
@@ -32,9 +33,11 @@ export const createTripTool = new Autonomous.Tool({
 
   async handler(input) {
     try {
+      const userId = getCurrentUserId();
       const result = await tripsTable.createRows({
         rows: [
           {
+            userId,
             name: input.name,
             description: input.description,
             centerLatitude: input.centerLatitude,
@@ -56,28 +59,16 @@ export const createTripTool = new Autonomous.Tool({
         return { success: false, error: "No trip created" };
       }
 
-      const trip = {
-        id: String(row.id),
-        name: row.name,
-        description: row.description,
-        centerLatitude: row.centerLatitude,
-        centerLongitude: row.centerLongitude,
-        zoomLevel: row.zoomLevel,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      };
+      const tripId = String(row.id);
 
-      // Update bot state
-      bot.state.trips = [...bot.state.trips, trip];
-      bot.state.selectedTripId = trip.id;
-
-      // Emit state update
-      await emitStateUpdate();
+      // Notify frontend to refresh and select the new trip
+      await notifyRefreshTrips();
+      await notifySelectTrip(tripId);
 
       return {
         success: true,
-        tripId: trip.id,
-        tripName: trip.name,
+        tripId,
+        tripName: row.name,
       };
     } catch (error) {
       return {
@@ -110,29 +101,22 @@ export const listTripsTool = new Autonomous.Tool({
 
   async handler() {
     try {
-      const result = await tripsTable.findRows({});
+      const userId = getCurrentUserId();
+      const result = await tripsTable.findRows({
+        filter: { userId: { $eq: userId } },
+      });
 
       const trips = result.rows.map((row) => ({
         id: String(row.id),
         name: row.name,
         description: row.description,
-        centerLatitude: row.centerLatitude,
-        centerLongitude: row.centerLongitude,
-        zoomLevel: row.zoomLevel,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
       }));
 
-      // Sync to bot state
-      bot.state.trips = trips;
-      await emitStateUpdate();
+      // Notify frontend to refresh
+      await notifyRefreshTrips();
 
       return {
-        trips: trips.map((t) => ({
-          id: t.id,
-          name: t.name,
-          description: t.description,
-        })),
+        trips,
         count: trips.length,
       };
     } catch (error) {
@@ -174,8 +158,9 @@ export const selectTripTool = new Autonomous.Tool({
       }
 
       const trip = result.rows[0];
-      bot.state.selectedTripId = input.tripId;
-      await emitStateUpdate();
+
+      // Notify frontend to select this trip
+      await notifySelectTrip(input.tripId);
 
       return {
         success: true,
@@ -247,24 +232,14 @@ export const updateTripTool = new Autonomous.Tool({
 
       const updatedRow = result.rows[0];
       const currentRow = current.rows[0];
+      const tripName = updatedRow?.name ?? currentRow.name;
 
-      const trip = {
-        id: String(updatedRow?.id ?? currentRow.id),
-        name: updatedRow?.name ?? currentRow.name,
-        description: updatedRow?.description ?? currentRow.description,
-        centerLatitude: updatedRow?.centerLatitude ?? currentRow.centerLatitude,
-        centerLongitude: updatedRow?.centerLongitude ?? currentRow.centerLongitude,
-        zoomLevel: updatedRow?.zoomLevel ?? currentRow.zoomLevel,
-        createdAt: updatedRow?.createdAt ?? currentRow.createdAt,
-        updatedAt: updatedRow?.updatedAt ?? currentRow.updatedAt,
-      };
-
-      bot.state.trips = bot.state.trips.map((t) => (t.id === tripId ? trip : t));
-      await emitStateUpdate();
+      // Notify frontend to refresh
+      await notifyRefreshTrips();
 
       return {
         success: true,
-        tripName: trip.name,
+        tripName,
       };
     } catch (error) {
       return {
@@ -307,14 +282,8 @@ export const deleteTripTool = new Autonomous.Tool({
         filter: { id: { $eq: Number(input.tripId) } },
       });
 
-      // Update bot state
-      bot.state.trips = bot.state.trips.filter((t) => t.id !== input.tripId);
-      if (bot.state.selectedTripId === input.tripId) {
-        bot.state.selectedTripId = null;
-      }
-      bot.state.places = bot.state.places.filter((p) => p.tripId !== input.tripId);
-
-      await emitStateUpdate();
+      // Notify frontend to refresh
+      await notifyRefreshTrips();
 
       return {
         success: true,

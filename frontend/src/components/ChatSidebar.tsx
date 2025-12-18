@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect, useRef } from "react";
 import {
   useWebchat,
   Container,
@@ -8,6 +8,8 @@ import {
 } from "@botpress/webchat";
 import type { BlockMessage } from "@botpress/webchat";
 import { useTravelStore } from "../stores/travelStore";
+import CustomRenderer from "./CustomRenderer";
+import { useTripData } from "../hooks/useTripData";
 
 interface ChatSidebarProps {
   clientId: string;
@@ -20,15 +22,12 @@ const BOT_CONFIG = {
 };
 
 export function ChatSidebar({ clientId }: ChatSidebarProps) {
-  const syncFromBot = useTravelStore((state) => state.syncFromBot);
-
   const webchat = useWebchat({
     clientId,
   });
 
   const {
     clientState,
-    on,
     messages,
     client,
     isTyping,
@@ -36,19 +35,28 @@ export function ChatSidebar({ clientId }: ChatSidebarProps) {
     newConversation,
   } = webchat;
 
+  const { fetchTrips } = useTripData();
+  const hasFetchedRef = useRef(false);
+
+  // Fetch trips when user connects (initial load)
+  useEffect(() => {
+    if (user?.userId && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      fetchTrips(user.userId);
+    }
+  }, [user?.userId, fetchTrips]);
+
   // Create sendMessage function using client
   const sendMessage = useCallback(
     async (payload: { type: string; text?: string }) => {
-      try {
-        await client?.sendMessage(payload);
-      } catch (error) {
-        console.error("[ChatSidebar] Failed to send message:", error);
-      }
+      // Cast to any to avoid strict type checking on webchat internal types
+      await client?.sendMessage(payload as Parameters<typeof client.sendMessage>[0]);
     },
     [client]
   );
 
   // Enrich messages with direction and sender info
+  // Keep custom messages so CustomRenderer can process them (it returns null to hide them)
   const enrichedMessages = useMemo(() => {
     return messages.map((message: BlockMessage) => {
       const direction: "outgoing" | "incoming" =
@@ -63,30 +71,6 @@ export function ChatSidebar({ clientId }: ChatSidebarProps) {
       };
     });
   }, [messages, user?.userId]);
-
-  // Listen for custom events from the bot (state sync)
-  useEffect(() => {
-    if (!on) return;
-
-    const unsubscribe = on("customEvent", (event) => {
-      console.log("[ChatSidebar] Received custom event:", event);
-
-      // Handle travel state updates from bot
-      if (event && typeof event === "object" && "type" in event) {
-        const typedEvent = event as { type: string; payload?: unknown };
-        if (typedEvent.type === "travel_state_update" && typedEvent.payload) {
-          console.log("[ChatSidebar] Syncing travel state:", typedEvent.payload);
-          syncFromBot(typedEvent.payload as Parameters<typeof syncFromBot>[0]);
-        }
-      }
-    });
-
-    return () => {
-      if (typeof unsubscribe === "function") {
-        unsubscribe();
-      }
-    };
-  }, [on, syncFromBot]);
 
   // Connection status indicator
   const getStatusColor = useCallback(() => {
@@ -157,6 +141,9 @@ export function ChatSidebar({ clientId }: ChatSidebarProps) {
             showMarquee={true}
             messages={enrichedMessages}
             sendMessage={sendMessage}
+            renderers={{
+              custom: CustomRenderer,
+            }}
           />
           <Composer
             disableComposer={false}

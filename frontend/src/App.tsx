@@ -1,5 +1,6 @@
 import { ChatSidebar } from "./components/ChatSidebar";
 import { TripList } from "./components/TripList";
+import { MapCanvas } from "./components/MapCanvas";
 import { useTravelStore } from "./stores/travelStore";
 import "./App.css";
 
@@ -30,42 +31,27 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Main content area - Map will go here in Phase 3 */}
+      {/* Main content area with map */}
       <main className="main-content">
-        <div className="map-placeholder">
-          <h2>Travel Copilot</h2>
-          <p>Your AI-powered travel planning assistant</p>
+        {/* Map */}
+        <div className="map-wrapper">
+          <MapCanvas />
+        </div>
 
-          {/* Trip list */}
+        {/* Floating trip panel */}
+        <div className="trip-panel">
+          <h3>Your Trips</h3>
           <TripList />
-
-          {/* Selected trip info */}
           {selectedTrip && (
-            <div className="selected-trip-info">
+            <div className="selected-trip-detail">
               <p>
-                📍 Viewing: <strong>{selectedTrip.name}</strong>
+                <strong>{selectedTrip.name}</strong>
               </p>
               {selectedTrip.description && (
-                <p className="selected-trip-description">
-                  {selectedTrip.description}
-                </p>
+                <p className="trip-description">{selectedTrip.description}</p>
               )}
             </div>
           )}
-
-          {/* Phase indicator */}
-          <div className="phase-indicator">
-            <p>
-              <strong>Phase 2:</strong> Trip Management
-            </p>
-            <ul>
-              <li>Create trips via chat</li>
-              <li>List and select trips</li>
-              <li>Update trip details</li>
-              <li>Delete trips</li>
-            </ul>
-            <p className="coming-soon">Map integration coming in Phase 3</p>
-          </div>
         </div>
       </main>
 

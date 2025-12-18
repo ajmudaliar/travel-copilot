@@ -22,35 +22,91 @@ body,
   background-color: #f5f5f5;
 }
 
-/* Main content area (map placeholder for now) */
+/* Main content area */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
-.map-placeholder {
+/* Map wrapper */
+.map-wrapper {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+.map-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* Floating trip panel */
+.trip-panel {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  max-width: 280px;
+  max-height: calc(100% - 2rem);
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.trip-panel h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.selected-trip-detail {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.selected-trip-detail p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.trip-description {
+  margin-top: 0.25rem !important;
+  color: #6b7280 !important;
+  font-size: 0.8rem !important;
+}
+
+/* Trip popup on map */
+.trip-popup {
+  min-width: 120px;
+}
+
+.trip-popup strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.trip-popup p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.selected-badge {
+  display: inline-block;
+  background: #667eea;
   color: white;
-  text-align: center;
-}
-
-.map-placeholder h2 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.map-placeholder > p {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  margin-bottom: 2rem;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
 }
 
 /* Trip summary card */
