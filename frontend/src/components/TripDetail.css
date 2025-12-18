@@ -1,0 +1,122 @@
+/* TripDetail styles */
+.trip-detail {
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.trip-detail__header {
+  margin-bottom: 0.25rem;
+}
+
+.trip-detail__name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.trip-detail__description {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.trip-detail__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0.4rem 0;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #667eea;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.trip-detail__toggle:hover {
+  color: #5a67d8;
+}
+
+.trip-detail__toggle-icon {
+  font-size: 0.6rem;
+  transition: transform 0.15s ease;
+}
+
+.trip-detail__toggle-text {
+  font-size: 0.8rem;
+}
+
+/* Places list */
+.trip-detail__places {
+  list-style: none;
+  margin: 0.5rem 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.trip-detail__places::-webkit-scrollbar {
+  width: 4px;
+}
+
+.trip-detail__places::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 2px;
+}
+
+.trip-detail__places::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.trip-detail__place {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: #f9fafb;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.trip-detail__place-name {
+  flex: 1;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trip-detail__place-category {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #9ca3af;
+  background: #e5e7eb;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+.trip-detail__place-rating {
+  font-size: 0.7rem;
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.trip-detail__place-rating::before {
+  content: "★ ";
+}
+
+.trip-detail__no-places {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-style: italic;
+  line-height: 1.4;
+}

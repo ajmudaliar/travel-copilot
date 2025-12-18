@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTravelStore } from "../stores/travelStore";
+import "./MapCanvas.css";
 
 // Fix default marker icons in Leaflet (they get broken by bundlers)
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -17,14 +18,32 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// Category colors for place markers
-const CATEGORY_COLORS: Record<string, string> = {
-  restaurant: "#ef4444", // red
-  cafe: "#f59e0b", // amber
-  hotel: "#3b82f6", // blue
-  attraction: "#8b5cf6", // purple
-  default: "#10b981", // green
+// Category colors and icons for place markers
+const CATEGORY_CONFIG: Record<string, { color: string; icon: string }> = {
+  restaurant: { color: "#ef4444", icon: "🍴" },
+  cafe: { color: "#f59e0b", icon: "☕" },
+  hotel: { color: "#3b82f6", icon: "🏨" },
+  attraction: { color: "#8b5cf6", icon: "📸" },
+  default: { color: "#10b981", icon: "📍" },
 };
+
+// Create custom pin icon for a category
+function createPlaceIcon(category?: string): L.DivIcon {
+  const config = CATEGORY_CONFIG[category || "default"] || CATEGORY_CONFIG.default;
+
+  return L.divIcon({
+    className: "place-marker",
+    html: `
+      <div class="place-marker__pin" style="background-color: ${config.color}">
+        <span class="place-marker__icon">${config.icon}</span>
+      </div>
+      <div class="place-marker__shadow"></div>
+    `,
+    iconSize: [36, 44],
+    iconAnchor: [18, 44],
+    popupAnchor: [0, -44],
+  });
+}
 
 // Default center (world view) and zoom
 const DEFAULT_CENTER: [number, number] = [20, 0];
@@ -97,15 +116,10 @@ export function MapCanvas() {
 
       {/* Place markers for selected trip */}
       {tripPlaces.map((place) => (
-        <CircleMarker
+        <Marker
           key={place.id}
-          center={[place.latitude, place.longitude]}
-          radius={8}
-          pathOptions={{
-            color: CATEGORY_COLORS[place.category || "default"] || CATEGORY_COLORS.default,
-            fillColor: CATEGORY_COLORS[place.category || "default"] || CATEGORY_COLORS.default,
-            fillOpacity: 0.8,
-          }}
+          position={[place.latitude, place.longitude]}
+          icon={createPlaceIcon(place.category)}
         >
           <Popup>
             <div className="place-popup">
@@ -122,7 +136,7 @@ export function MapCanvas() {
               )}
             </div>
           </Popup>
-        </CircleMarker>
+        </Marker>
       ))}
     </MapContainer>
   );

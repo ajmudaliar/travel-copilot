@@ -1,0 +1,73 @@
+/* Custom place marker - Google Maps style pin */
+.place-marker {
+  background: transparent;
+  border: none;
+}
+
+.place-marker__pin {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.place-marker__pin::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  border-radius: 0 0 2px 2px;
+}
+
+.place-marker__icon {
+  transform: rotate(45deg);
+  font-size: 16px;
+  line-height: 1;
+  filter: grayscale(100%) brightness(200%);
+}
+
+.place-marker__shadow {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+/* Hover effect */
+.place-marker:hover .place-marker__pin {
+  transform: rotate(-45deg) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Animation on add */
+@keyframes marker-bounce {
+  0% {
+    transform: rotate(-45deg) translateY(-10px);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(-45deg) translateY(3px);
+  }
+  100% {
+    transform: rotate(-45deg) translateY(0);
+    opacity: 1;
+  }
+}
+
+.place-marker__pin {
+  animation: marker-bounce 0.3s ease-out;
+}

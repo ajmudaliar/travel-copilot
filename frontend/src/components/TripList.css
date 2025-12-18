@@ -1,121 +1,39 @@
 /* TripList styles */
 .trip-list {
-  width: 100%;
-  max-width: 400px;
-}
-
-.trip-list__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.trip-list__header h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-  color: white;
-}
-
-.trip-list__count {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-}
-
-.trip-list__items {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  max-height: 400px;
+  gap: 0.25rem;
+  max-height: 180px;
   overflow-y: auto;
-  padding-right: 0.5rem;
 }
 
-.trip-list__items::-webkit-scrollbar {
-  width: 6px;
+.trip-list::-webkit-scrollbar {
+  width: 4px;
 }
 
-.trip-list__items::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+.trip-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 2px;
 }
 
-.trip-list__items::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+.trip-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
 }
 
-.trip-list__items::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+.trip-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Empty state */
-.trip-list--empty {
+.trip-list-empty {
+  padding: 1rem;
   text-align: center;
 }
 
-.trip-list__empty-state {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 2rem;
-}
-
-.trip-list__empty-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.trip-list__empty-state h3 {
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem 0;
-  color: white;
-}
-
-.trip-list__empty-state > p {
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 1.5rem 0;
-  line-height: 1.5;
-}
-
-.trip-list__suggestions {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  padding: 1rem;
-  text-align: left;
-}
-
-.trip-list__suggestions-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  margin: 0 0 0.5rem 0;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.trip-list__suggestions ul {
-  list-style: none;
-  padding: 0;
+.trip-list-empty p {
   margin: 0;
-}
-
-.trip-list__suggestions li {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
-  padding: 0.35rem 0;
+  color: #9ca3af;
   font-style: italic;
-}
-
-.trip-list__suggestions li::before {
-  content: '"';
-}
-
-.trip-list__suggestions li::after {
-  content: '"';
 }

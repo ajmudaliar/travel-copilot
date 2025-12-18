@@ -1,5 +1,6 @@
 import { ChatSidebar } from "./components/ChatSidebar";
 import { TripList } from "./components/TripList";
+import { TripDetail } from "./components/TripDetail";
 import { MapCanvas } from "./components/MapCanvas";
 import { useTravelStore } from "./stores/travelStore";
 import "./App.css";
@@ -10,11 +11,12 @@ const WEBCHAT_CLIENT_ID = import.meta.env.VITE_BOTPRESS_CLIENT_ID || "";
 function App() {
   const selectedTrip = useTravelStore((state) => state.getSelectedTrip());
   const places = useTravelStore((state) => state.places);
+  const trips = useTravelStore((state) => state.trips);
 
-  // Count places for selected trip
-  const placesCount = selectedTrip
-    ? places.filter((p) => p.tripId === selectedTrip.id).length
-    : 0;
+  // Filter places for selected trip
+  const tripPlaces = selectedTrip
+    ? places.filter((p) => p.tripId === selectedTrip.id)
+    : [];
 
   // Show warning if no client ID is configured
   if (!WEBCHAT_CLIENT_ID) {
@@ -46,20 +48,17 @@ function App() {
 
         {/* Floating trip panel */}
         <div className="trip-panel">
-          <h3>Your Trips</h3>
+          <div className="trip-panel__header">
+            <h3>Your Trips</h3>
+            {trips.length > 0 && (
+              <span className="trip-panel__count">{trips.length}</span>
+            )}
+          </div>
+
           <TripList />
+
           {selectedTrip && (
-            <div className="selected-trip-detail">
-              <p>
-                <strong>{selectedTrip.name}</strong>
-              </p>
-              {selectedTrip.description && (
-                <p className="trip-description">{selectedTrip.description}</p>
-              )}
-              <p className="trip-places-count">
-                {placesCount} {placesCount === 1 ? "place" : "places"}
-              </p>
-            </div>
+            <TripDetail trip={selectedTrip} places={tripPlaces} />
           )}
         </div>
       </main>
