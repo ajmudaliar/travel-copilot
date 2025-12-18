@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTravelStore } from "../stores/travelStore";
@@ -16,6 +16,15 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   shadowUrl: markerShadow,
 });
+
+// Category colors for place markers
+const CATEGORY_COLORS: Record<string, string> = {
+  restaurant: "#ef4444", // red
+  cafe: "#f59e0b", // amber
+  hotel: "#3b82f6", // blue
+  attraction: "#8b5cf6", // purple
+  default: "#10b981", // green
+};
 
 // Default center (world view) and zoom
 const DEFAULT_CENTER: [number, number] = [20, 0];
@@ -43,8 +52,14 @@ function MapController() {
 
 export function MapCanvas() {
   const trips = useTravelStore((state) => state.trips);
+  const places = useTravelStore((state) => state.places);
   const selectedTripId = useTravelStore((state) => state.selectedTripId);
   const selectTrip = useTravelStore((state) => state.selectTrip);
+
+  // Filter places for selected trip
+  const tripPlaces = selectedTripId
+    ? places.filter((p) => p.tripId === selectedTripId)
+    : [];
 
   return (
     <MapContainer
@@ -78,6 +93,36 @@ export function MapCanvas() {
             </div>
           </Popup>
         </Marker>
+      ))}
+
+      {/* Place markers for selected trip */}
+      {tripPlaces.map((place) => (
+        <CircleMarker
+          key={place.id}
+          center={[place.latitude, place.longitude]}
+          radius={8}
+          pathOptions={{
+            color: CATEGORY_COLORS[place.category || "default"] || CATEGORY_COLORS.default,
+            fillColor: CATEGORY_COLORS[place.category || "default"] || CATEGORY_COLORS.default,
+            fillOpacity: 0.8,
+          }}
+        >
+          <Popup>
+            <div className="place-popup">
+              <strong>{place.name}</strong>
+              {place.category && (
+                <span className="place-category">{place.category}</span>
+              )}
+              <p className="place-address">{place.address}</p>
+              {place.rating && (
+                <p className="place-rating">Rating: {place.rating}/5</p>
+              )}
+              {place.description && (
+                <p className="place-description">{place.description}</p>
+              )}
+            </div>
+          </Popup>
+        </CircleMarker>
       ))}
     </MapContainer>
   );

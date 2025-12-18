@@ -9,6 +9,12 @@ const WEBCHAT_CLIENT_ID = import.meta.env.VITE_BOTPRESS_CLIENT_ID || "";
 
 function App() {
   const selectedTrip = useTravelStore((state) => state.getSelectedTrip());
+  const places = useTravelStore((state) => state.places);
+
+  // Count places for selected trip
+  const placesCount = selectedTrip
+    ? places.filter((p) => p.tripId === selectedTrip.id).length
+    : 0;
 
   // Show warning if no client ID is configured
   if (!WEBCHAT_CLIENT_ID) {
@@ -50,6 +56,9 @@ function App() {
               {selectedTrip.description && (
                 <p className="trip-description">{selectedTrip.description}</p>
               )}
+              <p className="trip-places-count">
+                {placesCount} {placesCount === 1 ? "place" : "places"}
+              </p>
             </div>
           )}
         </div>

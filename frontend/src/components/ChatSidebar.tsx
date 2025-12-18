@@ -35,16 +35,23 @@ export function ChatSidebar({ clientId }: ChatSidebarProps) {
     newConversation,
   } = webchat;
 
-  const { fetchTrips } = useTripData();
+  const { fetchTrips, fetchPlaces, restoreUserState } = useTripData();
+  const setUserId = useTravelStore((state) => state.setUserId);
   const hasFetchedRef = useRef(false);
 
-  // Fetch trips when user connects (initial load)
+  // Store userId, fetch trips, and restore user state on initial load
   useEffect(() => {
-    if (user?.userId && !hasFetchedRef.current) {
-      hasFetchedRef.current = true;
-      fetchTrips(user.userId);
-    }
-  }, [user?.userId, fetchTrips]);
+    const initializeData = async () => {
+      if (user?.userId && !hasFetchedRef.current) {
+        hasFetchedRef.current = true;
+        setUserId(user.userId);
+        await fetchTrips(user.userId);
+        await restoreUserState(user.userId);
+      }
+    };
+
+    initializeData();
+  }, [user?.userId, fetchTrips, fetchPlaces, restoreUserState, setUserId]);
 
   // Create sendMessage function using client
   const sendMessage = useCallback(

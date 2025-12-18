@@ -17,7 +17,7 @@ type UINotification =
  */
 const CustomRenderer: FC<BlockObjects["custom"]> = (props) => {
   const selectTrip = useTravelStore((state) => state.selectTrip);
-  const { fetchTrips } = useTripData();
+  const { fetchTrips, fetchPlaces } = useTripData();
   const processedRef = useRef<string | null>(null);
 
   const url = props.url || "";
@@ -39,6 +39,7 @@ const CustomRenderer: FC<BlockObjects["custom"]> = (props) => {
 
       case "select_trip":
         selectTrip(data.tripId);
+        fetchPlaces(data.tripId);
         break;
 
       case "pan_to":
@@ -46,10 +47,10 @@ const CustomRenderer: FC<BlockObjects["custom"]> = (props) => {
         break;
 
       case "refresh_places":
-        // TODO: Implement when places are added
+        fetchPlaces(data.tripId);
         break;
     }
-  }, [url, data, messageId, fetchTrips, selectTrip]);
+  }, [url, data, messageId, fetchTrips, fetchPlaces, selectTrip]);
 
   // Never render anything - these are control messages
   return null;

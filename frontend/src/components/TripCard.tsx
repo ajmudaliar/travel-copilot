@@ -7,13 +7,8 @@ interface TripCardProps {
 }
 
 export function TripCard({ trip }: TripCardProps) {
-  const { selectedTripId, selectTrip, getPlacesForTrip } = useTravelStore();
+  const selectedTripId = useTravelStore((state) => state.selectedTripId);
   const isSelected = selectedTripId === trip.id;
-  const places = getPlacesForTrip(trip.id);
-
-  const handleClick = () => {
-    selectTrip(isSelected ? null : trip.id);
-  };
 
   // Format date nicely
   const formatDate = (dateString: string) => {
@@ -28,17 +23,7 @@ export function TripCard({ trip }: TripCardProps) {
   };
 
   return (
-    <div
-      className={`trip-card ${isSelected ? "trip-card--selected" : ""}`}
-      onClick={handleClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          handleClick();
-        }
-      }}
-    >
+    <div className={`trip-card ${isSelected ? "trip-card--selected" : ""}`}>
       <div className="trip-card__header">
         <h4 className="trip-card__name">{trip.name}</h4>
         {isSelected && <span className="trip-card__badge">Selected</span>}
@@ -49,9 +34,6 @@ export function TripCard({ trip }: TripCardProps) {
       )}
 
       <div className="trip-card__meta">
-        <span className="trip-card__places">
-          {places.length} {places.length === 1 ? "place" : "places"}
-        </span>
         <span className="trip-card__date">Created {formatDate(trip.createdAt)}</span>
       </div>
     </div>

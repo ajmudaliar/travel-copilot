@@ -16,6 +16,7 @@ function getClient() {
 
 export function useTripData() {
   const setTrips = useTravelStore((state) => state.setTrips);
+  const setPlaces = useTravelStore((state) => state.setPlaces);
   const selectTrip = useTravelStore((state) => state.selectTrip);
 
   const fetchTrips = useCallback(async (userId?: string) => {
@@ -45,18 +46,75 @@ export function useTripData() {
       }));
 
       setTrips(trips);
-
-      // Auto-select first trip if none selected
-      if (trips.length > 0) {
-        const currentSelected = useTravelStore.getState().selectedTripId;
-        if (!currentSelected) {
-          selectTrip(trips[0].id);
-        }
-      }
+      // Selection is restored from server state via restoreUserState()
     } catch (error) {
       console.error("Failed to fetch trips:", error);
     }
-  }, [setTrips, selectTrip]);
+  }, [setTrips]);
 
-  return { fetchTrips };
+  const fetchPlaces = useCallback(async (tripId: string) => {
+    const bpClient = getClient();
+    if (!bpClient || !tripId) {
+      return;
+    }
+
+    try {
+      const result = await bpClient.findTableRows({
+        table: "placesTable",
+        filter: { tripId: { $eq: tripId } },
+        limit: 100,
+        orderBy: "createdAt",
+        orderDirection: "desc",
+      });
+
+      const places = result.rows.map((row) => ({
+        id: String(row.id),
+        tripId: row.tripId as string,
+        name: row.name as string,
+        address: row.address as string,
+        latitude: row.latitude as number,
+        longitude: row.longitude as number,
+        rating: row.rating as number | undefined,
+        description: row.description as string | undefined,
+        category: row.category as string | undefined,
+        createdAt: row.createdAt || new Date().toISOString(),
+      }));
+
+      setPlaces(places);
+    } catch (error) {
+      console.error("Failed to fetch places:", error);
+    }
+  }, [setPlaces]);
+
+  /**
+   * Fetch user state from server and restore selected trip + places.
+   * Call this on initial load to sync state from server.
+   */
+  const restoreUserState = useCallback(async (userId: string) => {
+    const bpClient = getClient();
+    if (!bpClient || !userId) {
+      return;
+    }
+
+    try {
+      const result = await bpClient.getState({
+        type: "user",
+        id: userId,
+        name: "userState",
+      });
+
+      // The payload structure is { value: { selectedTripId, ... } }
+      const payload = result.state?.payload;
+      const selectedTripId = payload?.value?.selectedTripId || payload?.selectedTripId;
+
+      if (selectedTripId) {
+        selectTrip(selectedTripId);
+        await fetchPlaces(selectedTripId);
+      }
+    } catch {
+      // State might not exist yet, that's OK for new users
+    }
+  }, [selectTrip, fetchPlaces]);
+
+  return { fetchTrips, fetchPlaces, restoreUserState };
 }

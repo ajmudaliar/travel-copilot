@@ -83,6 +83,13 @@ body,
   font-size: 0.8rem !important;
 }
 
+.trip-places-count {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.85rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
 /* Trip popup on map */
 .trip-popup {
   min-width: 120px;
@@ -107,6 +114,46 @@ body,
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
   margin-top: 0.25rem;
+}
+
+/* Place popup on map */
+.place-popup {
+  min-width: 150px;
+}
+
+.place-popup strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.place-category {
+  display: inline-block;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  text-transform: capitalize;
+}
+
+.place-address {
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.place-rating {
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+  color: #f59e0b;
+}
+
+.place-description {
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-style: italic;
 }
 
 /* Trip summary card */

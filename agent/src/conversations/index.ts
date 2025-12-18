@@ -1,6 +1,8 @@
-import { Conversation, z } from "@botpress/runtime";
+import { Conversation, z, user } from "@botpress/runtime";
 import { tripTools } from "../tools/trips";
+import { placeTools } from "../tools/places";
 import { tripsTable } from "../tables/trips";
+import { placesTable } from "../tables/places";
 import { notifyRefreshTrips } from "../utils/stateSync";
 import { getCurrentUserId } from "../utils/context";
 
@@ -14,7 +16,6 @@ export const Chat = new Conversation({
   // Per-conversation state
   state: z.object({
     messageCount: z.number().default(0),
-    selectedTripId: z.string().optional(),
   }),
 
   async handler({ message, state, conversation, execute }) {
@@ -33,9 +34,21 @@ export const Chat = new Conversation({
     });
     const trips = tripsResult.rows;
     const tripCount = trips.length;
-    const selectedTrip = state.selectedTripId
-      ? trips.find((t) => String(t.id) === state.selectedTripId)
+
+    // Find selected trip from user state (persists across conversations)
+    const selectedTripId = user.state.selectedTripId;
+    const selectedTrip = selectedTripId
+      ? trips.find((t) => String(t.id) === selectedTripId)
       : undefined;
+
+    // Query places for selected trip
+    let places: typeof placesTable.inferRow[] = [];
+    if (selectedTrip) {
+      const placesResult = await placesTable.findRows({
+        filter: { tripId: { $eq: String(selectedTrip.id) } },
+      });
+      places = placesResult.rows;
+    }
 
     // Handle text messages
     if (message?.type === "text") {
@@ -67,24 +80,52 @@ export const Chat = new Conversation({
         ? trips.map((t) => `- ${t.name} (ID: ${t.id})`).join("\n")
         : "No trips yet";
 
-    // Use AI to handle the message with trip tools
+    // Build places summary for selected trip
+    const placesSummary =
+      places.length > 0
+        ? places.map((p) => `- ${p.name} (${p.category || "place"}, ID: ${p.id})`).join("\n")
+        : "No places added yet";
+
+    // Use AI to handle the message with trip and place tools
     await execute({
+      hooks: {
+        onAfterTool: async ({ tool, input, output }) => {
+          // Update user state when selectTrip or createTrip is called
+          if (tool.name === "selectTrip" && output?.success && input?.tripId) {
+            user.state.selectedTripId = String(input.tripId);
+          }
+          if (tool.name === "createTrip" && output?.success && output?.tripId) {
+            user.state.selectedTripId = output.tripId;
+          }
+        },
+      },
       instructions: `You are a helpful travel planning assistant called Travel Copilot.
 
 ## Your capabilities:
+**Trip Management:**
 - Create trips for users (e.g., "Create a trip to Paris")
 - List all trips
 - Select a trip to work with
 - Update trip details (name, description, location)
 - Delete trips (ask for confirmation first)
 
+**Place Management:**
+- Search for places (restaurants, cafes, hotels, attractions)
+- Add places to the selected trip
+- List places in a trip
+- Remove places from a trip
+
 ## Current state:
 - Message #${state.messageCount} in this conversation
 - Total trips: ${tripCount}
 - Selected trip: ${selectedTrip ? `"${selectedTrip.name}" (ID: ${selectedTrip.id})` : "None"}
+- Places in selected trip: ${places.length}
 
 ## Existing trips:
 ${tripListSummary}
+
+## Places in selected trip:
+${selectedTrip ? placesSummary : "Select a trip first to see places"}
 
 ## Guidelines:
 1. When users want to create a trip, use the createTrip tool with a descriptive name
@@ -112,9 +153,12 @@ ${tripListSummary}
 5. Keep responses concise and helpful
 6. After creating or modifying trips, summarize what was done
 7. IMPORTANT: Use markdown for formatting (e.g., **bold**, *italic*), NOT HTML tags
+8. When searching for places, show results clearly with name, rating, and address
+9. IMPORTANT: When adding a place, use the tripId from the "Selected trip" info above. The selected trip ID is: ${selectedTrip?.id || "none"}
+10. When adding a place from search results, use the exact coordinates from the search result
 
 Be friendly and conversational while helping users plan their travels!`,
-      tools: tripTools,
+      tools: [...tripTools, ...placeTools],
     });
   },
 });

@@ -2,6 +2,10 @@ import { create } from "zustand";
 import type { Trip, Place, TravelState } from "../types";
 
 interface TravelStore extends TravelState {
+  // User info (for API calls)
+  userId: string | null;
+  setUserId: (userId: string | null) => void;
+
   // Actions
   setTrips: (trips: Trip[]) => void;
   addTrip: (trip: Trip) => void;
@@ -23,11 +27,15 @@ interface TravelStore extends TravelState {
 
 export const useTravelStore = create<TravelStore>((set, get) => ({
   // Initial state
+  userId: null,
   trips: [],
   selectedTripId: null,
   places: [],
   isSearching: false,
   searchResults: [],
+
+  // User
+  setUserId: (userId) => set({ userId }),
 
   // Trip actions
   setTrips: (trips) => set({ trips }),

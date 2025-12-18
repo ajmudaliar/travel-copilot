@@ -54,6 +54,11 @@ export default defineConfig({
         .string()
         .default("en")
         .describe("User's preferred language"),
+      selectedTripId: z
+        .string()
+        .nullable()
+        .default(null)
+        .describe("Currently selected trip ID for this user"),
     }),
   },
 
