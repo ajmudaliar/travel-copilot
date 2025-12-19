@@ -2,6 +2,7 @@ import { Autonomous, z } from "@botpress/runtime";
 import { placesTable } from "../tables/places";
 import { tripsTable } from "../tables/trips";
 import { notifyRefreshPlaces } from "../utils/stateSync";
+import { isGooglePlacesConfigured, searchGooglePlaces } from "../utils/googlePlaces";
 
 /**
  * Place management tools for the AI to use in conversations.
@@ -254,6 +255,27 @@ const MOCK_PLACES: Record<string, Array<{
     { name: "Tokyo Tower", address: "4-2-8 Shibakoen, Minato City, Tokyo", latitude: 35.6586, longitude: 139.7454, rating: 4.5, category: "attraction" },
     { name: "Meiji Shrine", address: "1-1 Yoyogikamizonocho, Shibuya City, Tokyo", latitude: 35.6764, longitude: 139.6993, rating: 4.7, category: "attraction" },
   ],
+  // Montreal
+  "montreal:restaurant": [
+    { name: "Joe Beef", address: "2491 Rue Notre-Dame O, Montreal, QC H3J 1N6", latitude: 45.4833, longitude: -73.5804, rating: 4.7, category: "restaurant" },
+    { name: "Schwartz's Deli", address: "3895 Bd Saint-Laurent, Montreal, QC H2W 1X9", latitude: 45.5168, longitude: -73.5778, rating: 4.5, category: "restaurant" },
+    { name: "Au Pied de Cochon", address: "536 Av Duluth E, Montreal, QC H2L 1A9", latitude: 45.5192, longitude: -73.5721, rating: 4.6, category: "restaurant" },
+  ],
+  "montreal:cafe": [
+    { name: "Crew Collective & Café", address: "360 Rue Saint-Jacques, Montreal, QC H2Y 1P5", latitude: 45.5045, longitude: -73.5594, rating: 4.6, category: "cafe" },
+    { name: "Café Olimpico", address: "124 Rue Saint-Viateur O, Montreal, QC H2T 2L1", latitude: 45.5234, longitude: -73.6001, rating: 4.4, category: "cafe" },
+    { name: "Tommy Cafe", address: "200 Rue Notre-Dame O, Montreal, QC H2Y 1T3", latitude: 45.5031, longitude: -73.5556, rating: 4.5, category: "cafe" },
+  ],
+  "montreal:attraction": [
+    { name: "Mount Royal", address: "Montreal, QC H3H 1A1", latitude: 45.5048, longitude: -73.5874, rating: 4.8, category: "attraction" },
+    { name: "Old Montreal", address: "Old Montreal, Montreal, QC", latitude: 45.5079, longitude: -73.5540, rating: 4.7, category: "attraction" },
+    { name: "Notre-Dame Basilica", address: "110 Rue Notre-Dame O, Montreal, QC H2Y 1T1", latitude: 45.5046, longitude: -73.5566, rating: 4.8, category: "attraction" },
+    { name: "Montreal Museum of Fine Arts", address: "1380 Rue Sherbrooke O, Montreal, QC H3G 1J5", latitude: 45.4986, longitude: -73.5794, rating: 4.6, category: "attraction" },
+  ],
+  "montreal:hotel": [
+    { name: "Fairmont The Queen Elizabeth", address: "900 Bd René-Lévesque O, Montreal, QC H3B 4A5", latitude: 45.4996, longitude: -73.5679, rating: 4.5, category: "hotel" },
+    { name: "Hotel William Gray", address: "421 Rue Saint-Vincent, Montreal, QC H2Y 3A6", latitude: 45.5082, longitude: -73.5529, rating: 4.6, category: "hotel" },
+  ],
   // London
   "london:restaurant": [
     { name: "Dishoom King's Cross", address: "5 Stable St, London N1C 4AB", latitude: 51.5355, longitude: -0.1246, rating: 4.6, category: "restaurant" },
@@ -279,16 +301,16 @@ const MOCK_PLACES: Record<string, Array<{
 };
 
 /**
- * Search for places (mock implementation)
+ * Search for places using Google Places API (with mock fallback)
  */
 export const searchPlacesTool = new Autonomous.Tool({
   name: "searchPlaces",
-  description: "Search for places like restaurants, cafes, hotels, or attractions. Returns mock results for now. Use this when the user wants to find places to add to their trip.",
+  description: "Search for places like restaurants, cafes, hotels, or attractions. Use this when the user wants to find places to add to their trip.",
 
   input: z.object({
     query: z.string().describe("Search query, e.g., 'restaurants in Paris' or 'coffee shops near Eiffel Tower'"),
     category: z.string().optional().describe("Category filter: restaurant, cafe, hotel, attraction"),
-    nearCity: z.string().optional().describe("City to search in: paris, newyork, tokyo, london"),
+    nearCity: z.string().optional().describe("City to search in"),
   }),
 
   output: z.object({
@@ -307,7 +329,26 @@ export const searchPlacesTool = new Autonomous.Tool({
   }),
 
   async handler(input) {
-    // Parse query to extract city and category
+    // Try Google Places API first
+    if (isGooglePlacesConfigured()) {
+      try {
+        const { results, count } = await searchGooglePlaces(
+          input.query,
+          input.category,
+          input.nearCity
+        );
+        return {
+          results,
+          count,
+          note: "Results from Google Places API.",
+        };
+      } catch (error) {
+        console.error("Google Places API failed, falling back to mock:", error);
+        // Fall through to mock data
+      }
+    }
+
+    // Fallback to mock data
     const queryLower = input.query.toLowerCase();
 
     let city = input.nearCity?.toLowerCase() || "default";
@@ -318,6 +359,7 @@ export const searchPlacesTool = new Autonomous.Tool({
     else if (queryLower.includes("new york") || queryLower.includes("nyc")) city = "newyork";
     else if (queryLower.includes("tokyo")) city = "tokyo";
     else if (queryLower.includes("london")) city = "london";
+    else if (queryLower.includes("montreal") || queryLower.includes("montréal")) city = "montreal";
 
     // Try to detect category from query
     if (queryLower.includes("restaurant") || queryLower.includes("food") || queryLower.includes("eat")) {
@@ -341,6 +383,7 @@ export const searchPlacesTool = new Autonomous.Tool({
         newyork: { lat: 40.7128, lng: -74.0060 },
         tokyo: { lat: 35.6762, lng: 139.6503 },
         london: { lat: 51.5074, lng: -0.1278 },
+        montreal: { lat: 45.5017, lng: -73.5673 },
       };
       const center = cityCenters[city];
       if (center) {
@@ -355,7 +398,7 @@ export const searchPlacesTool = new Autonomous.Tool({
     return {
       results,
       count: results.length,
-      note: "These are mock results. Connect Google Places API for real data.",
+      note: "Mock results (set GOOGLE_PLACES_API_KEY for real data).",
     };
   },
 });
