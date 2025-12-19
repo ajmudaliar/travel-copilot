@@ -1,0 +1,148 @@
+.place-suggestion-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.place-suggestion-card:not(:last-child) {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Place content area */
+.place-suggestion-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Google PlaceOverview style overrides to match app */
+.place-suggestion-card__content gmpx-place-overview {
+  /* Font sizes (25% smaller) */
+  --gmpx-font-size-base: 10px;
+  --gmpx-font-size-small: 8px;
+  --gmpx-font-size-large: 11px;
+
+  /* Colors to match app theme */
+  --gmpx-color-primary: #667eea;
+  --gmpx-color-on-primary: white;
+  --gmpx-color-surface: white;
+  --gmpx-color-on-surface: #1f2937;
+  --gmpx-color-on-surface-variant: #6b7280;
+
+  /* Font family */
+  --gmpx-font-family-base: system-ui, -apple-system, sans-serif;
+  --gmpx-font-family-headings: system-ui, -apple-system, sans-serif;
+}
+
+/* Action buttons - vertical stack on right, top aligned */
+.place-suggestion-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+.place-suggestion-card__btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #6b7280;
+}
+
+.place-suggestion-card__btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.place-suggestion-card__btn--add {
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.place-suggestion-card__btn--add:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+}
+
+.place-suggestion-card__btn--add:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.place-suggestion-card__btn--added {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.place-suggestion-card__btn--added:hover {
+  background: #10b981;
+  color: white;
+}
+
+/* Fallback card (for mock data) */
+.place-suggestion-card__fallback {
+  padding: 4px 0;
+}
+
+.place-suggestion-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.place-suggestion-card__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.place-suggestion-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.place-suggestion-card__name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.place-suggestion-card__category {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: capitalize;
+}
+
+.place-suggestion-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.place-suggestion-card__star {
+  font-size: 11px;
+}
+
+.place-suggestion-card__address {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.4;
+}

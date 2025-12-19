@@ -479,3 +479,14 @@ body,
   --bpFontSize-sm: 13px;
   --bpFontSize-xs: 12px;
 }
+
+/* Place suggestions container in chat - single card */
+.place-suggestions-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 4px 12px;
+  margin-left: 12px;
+  width: 100%;
+  max-width: 340px;
+}

@@ -153,7 +153,7 @@ ${selectedTrip ? placesSummary : "Select a trip first to see places"}
 5. Keep responses concise and helpful
 6. After creating or modifying trips, summarize what was done
 7. IMPORTANT: Use markdown for formatting (e.g., **bold**, *italic*), NOT HTML tags
-8. When searching for places, show results clearly with name, rating, and address
+8. IMPORTANT: When searching for places with searchPlaces, DO NOT list or describe the results in your response. The results are automatically displayed as interactive cards in the UI. Just say something brief like "Here are some options:" or "I found these places for you."
 9. IMPORTANT: When adding a place, use the tripId from the "Selected trip" info above. The selected trip ID is: ${selectedTrip?.id || "none"}
 10. When adding a place from search results, use the exact coordinates from the search result
 

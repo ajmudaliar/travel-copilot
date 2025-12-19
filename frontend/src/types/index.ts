@@ -17,6 +17,7 @@ export interface Trip {
 export interface Place {
   id: string;
   tripId: string;
+  googlePlaceId?: string;
   name: string;
   address: string;
   latitude: number;

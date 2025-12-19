@@ -53,8 +53,11 @@ const DEFAULT_ZOOM = 2;
 function MapController() {
   const map = useMap();
   const selectedTrip = useTravelStore((state) => state.getSelectedTrip());
+  const mapTarget = useTravelStore((state) => state.mapTarget);
+  const clearMapTarget = useTravelStore((state) => state.clearMapTarget);
   const prevTripIdRef = useRef<string | null>(null);
 
+  // Handle trip selection changes
   useEffect(() => {
     if (selectedTrip && selectedTrip.id !== prevTripIdRef.current) {
       map.flyTo(
@@ -65,6 +68,19 @@ function MapController() {
       prevTripIdRef.current = selectedTrip.id;
     }
   }, [selectedTrip, map]);
+
+  // Handle panMapTo from store (e.g., when clicking "Show on Map" in chat)
+  useEffect(() => {
+    if (mapTarget) {
+      map.flyTo(
+        [mapTarget.lat, mapTarget.lng],
+        mapTarget.zoom || 15,
+        { duration: 1 }
+      );
+      // Clear target after flying
+      clearMapTarget();
+    }
+  }, [mapTarget, map, clearMapTarget]);
 
   return null;
 }

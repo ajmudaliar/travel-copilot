@@ -1,10 +1,22 @@
 import { create } from "zustand";
 import type { Trip, Place, TravelState } from "../types";
 
+// Map target for panning/zooming
+interface MapTarget {
+  lat: number;
+  lng: number;
+  zoom?: number;
+}
+
 interface TravelStore extends TravelState {
   // User info (for API calls)
   userId: string | null;
   setUserId: (userId: string | null) => void;
+
+  // Map control
+  mapTarget: MapTarget | null;
+  panMapTo: (lat: number, lng: number, zoom?: number) => void;
+  clearMapTarget: () => void;
 
   // Actions
   setTrips: (trips: Trip[]) => void;
@@ -33,9 +45,14 @@ export const useTravelStore = create<TravelStore>((set, get) => ({
   places: [],
   isSearching: false,
   searchResults: [],
+  mapTarget: null,
 
   // User
   setUserId: (userId) => set({ userId }),
+
+  // Map control
+  panMapTo: (lat, lng, zoom) => set({ mapTarget: { lat, lng, zoom } }),
+  clearMapTarget: () => set({ mapTarget: null }),
 
   // Trip actions
   setTrips: (trips) => set({ trips }),

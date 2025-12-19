@@ -5,6 +5,7 @@ dotenv.config();
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
 interface PlaceResult {
+  placeId: string;
   name: string;
   address: string;
   latitude: number;
@@ -14,6 +15,7 @@ interface PlaceResult {
 }
 
 interface GooglePlaceResult {
+  id?: string;
   displayName?: { text: string };
   formattedAddress?: string;
   location?: { latitude: number; longitude: number };
@@ -87,7 +89,7 @@ export async function searchGooglePlaces(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-          "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.location,places.rating,places.types,places.primaryType",
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.types,places.primaryType",
         },
         body: JSON.stringify({
           textQuery: searchQuery,
@@ -107,6 +109,7 @@ export async function searchGooglePlaces(
     const places: GooglePlaceResult[] = data.places || [];
 
     const results: PlaceResult[] = places.map((place) => ({
+      placeId: place.id || "",
       name: place.displayName?.text || "Unknown",
       address: place.formattedAddress || "",
       latitude: place.location?.latitude || 0,

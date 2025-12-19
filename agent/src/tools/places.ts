@@ -1,4 +1,4 @@
-import { Autonomous, z } from "@botpress/runtime";
+import { Autonomous, z, context, user } from "@botpress/runtime";
 import { placesTable } from "../tables/places";
 import { tripsTable } from "../tables/trips";
 import { notifyRefreshPlaces } from "../utils/stateSync";
@@ -7,6 +7,53 @@ import { isGooglePlacesConfigured, searchGooglePlaces } from "../utils/googlePla
 /**
  * Place management tools for the AI to use in conversations.
  */
+
+/**
+ * Place data for UI suggestions
+ */
+interface PlaceSuggestion {
+  placeId: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  rating: number;
+  category: string;
+}
+
+/**
+ * Send place suggestions to the frontend as a custom message
+ */
+async function sendPlaceSuggestions(places: PlaceSuggestion[], tripId: string | null): Promise<void> {
+  try {
+    const client = context.get("client");
+    const conversation = context.get("conversation");
+    const botId = context.get("botId");
+
+    if (!client || !conversation) {
+      console.warn("No client/conversation context for place suggestions");
+      return;
+    }
+
+    await client.createMessage({
+      conversationId: conversation.id,
+      userId: botId,
+      type: "custom",
+      payload: {
+        name: "place_suggestions",
+        url: "custom://place-suggestions",
+        data: {
+          type: "place_suggestions",
+          places,
+          tripId,
+        },
+      },
+      tags: {},
+    });
+  } catch (error) {
+    console.error("Failed to send place suggestions:", error);
+  }
+}
 
 /**
  * Add a place to a trip
@@ -192,6 +239,7 @@ export const listPlacesTool = new Autonomous.Tool({
 
 /**
  * Mock place data for different cities/categories
+ * Note: placeId is added as empty string when returning (Google Places UI Kit won't work with mock)
  */
 const MOCK_PLACES: Record<string, Array<{
   name: string;
@@ -316,6 +364,7 @@ export const searchPlacesTool = new Autonomous.Tool({
   output: z.object({
     results: z.array(
       z.object({
+        placeId: z.string().describe("Google Place ID for UI Kit"),
         name: z.string(),
         address: z.string(),
         latitude: z.number(),
@@ -329,6 +378,9 @@ export const searchPlacesTool = new Autonomous.Tool({
   }),
 
   async handler(input) {
+    // Get current selected trip ID for the suggestion cards
+    const selectedTripId = user.state.selectedTripId;
+
     // Try Google Places API first
     if (isGooglePlacesConfigured()) {
       try {
@@ -337,10 +389,14 @@ export const searchPlacesTool = new Autonomous.Tool({
           input.category,
           input.nearCity
         );
+
+        // Send place suggestions to frontend as custom message
+        await sendPlaceSuggestions(results, selectedTripId);
+
         return {
           results,
           count,
-          note: "Results from Google Places API.",
+          note: "Results displayed in chat. User can click to add places to their trip.",
         };
       } catch (error) {
         console.error("Google Places API failed, falling back to mock:", error);
@@ -395,10 +451,19 @@ export const searchPlacesTool = new Autonomous.Tool({
       }
     }
 
+    // Add empty placeId for mock data (Google Places UI Kit won't work without real IDs)
+    const resultsWithPlaceId = results.map((r) => ({
+      placeId: "",
+      ...r,
+    }));
+
+    // Send place suggestions to frontend as custom message
+    await sendPlaceSuggestions(resultsWithPlaceId, selectedTripId);
+
     return {
-      results,
-      count: results.length,
-      note: "Mock results (set GOOGLE_PLACES_API_KEY for real data).",
+      results: resultsWithPlaceId,
+      count: resultsWithPlaceId.length,
+      note: "Results displayed in chat (mock data - Google Places UI won't show photos). User can click to add places.",
     };
   },
 });
