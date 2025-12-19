@@ -94,6 +94,25 @@ export const addPlaceTool = new Autonomous.Tool({
         };
       }
 
+      // Check if place with same coordinates already exists in this trip
+      const existing = await placesTable.findRows({
+        filter: {
+          tripId: { $eq: input.tripId },
+          latitude: { $eq: input.latitude },
+          longitude: { $eq: input.longitude },
+        },
+        limit: 1,
+      });
+
+      if (existing.rows.length > 0) {
+        const existingPlace = existing.rows[0];
+        return {
+          success: true,
+          placeId: String(existingPlace.id),
+          placeName: existingPlace.name,
+        };
+      }
+
       const result = await placesTable.createRows({
         rows: [
           {
@@ -169,9 +188,7 @@ export const removePlaceTool = new Autonomous.Tool({
         };
       }
 
-      await placesTable.deleteRows({
-        filter: { id: { $eq: Number(input.placeId) } },
-      });
+      await placesTable.deleteRowIds([Number(input.placeId)]);
 
       await notifyRefreshPlaces(place.tripId);
 

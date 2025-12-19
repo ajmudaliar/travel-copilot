@@ -34,6 +34,22 @@ export const createTripTool = new Autonomous.Tool({
   async handler(input) {
     try {
       const userId = getCurrentUserId();
+
+      // Check if trip with same name already exists for this user
+      const existing = await tripsTable.findRows({
+        filter: { userId: { $eq: userId }, name: { $eq: input.name } },
+        limit: 1,
+      });
+
+      if (existing.rows.length > 0) {
+        const existingTrip = existing.rows[0];
+        return {
+          success: true,
+          tripId: String(existingTrip.id),
+          tripName: existingTrip.name,
+        };
+      }
+
       const result = await tripsTable.createRows({
         rows: [
           {
@@ -278,9 +294,7 @@ export const deleteTripTool = new Autonomous.Tool({
       const tripName = existing.rows[0]?.name;
 
       // Delete from table
-      await tripsTable.deleteRows({
-        filter: { id: { $eq: Number(input.tripId) } },
-      });
+      await tripsTable.deleteRowIds([Number(input.tripId)]);
 
       // Notify frontend to refresh
       await notifyRefreshTrips();
