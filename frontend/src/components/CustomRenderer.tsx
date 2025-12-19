@@ -1,9 +1,12 @@
 import { useEffect, useRef, createContext, useContext } from "react";
 import type { FC, ReactNode } from "react";
 import type { BlockObjects } from "@botpress/webchat";
+import { APILoader } from "@googlemaps/extended-component-library/react";
 import { useTravelStore } from "../stores/travelStore";
 import { useTripData } from "../hooks/useTripData";
 import { PlaceSuggestionCard, type PlaceSuggestion } from "./PlaceSuggestionCard";
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
 // Webchat client type for callAction
 interface WebchatClient {
@@ -90,16 +93,18 @@ const CustomRenderer: FC<BlockObjects["custom"]> = (props) => {
   if (url === "custom://place-suggestions" && data && "places" in data) {
     const suggestionsData = data as PlaceSuggestionsData;
     return (
-      <div className="place-suggestions-container">
-        {suggestionsData.places.map((place, index) => (
-          <PlaceSuggestionCard
-            key={`${place.placeId || place.name}-${index}`}
-            place={place}
-            tripId={suggestionsData.tripId}
-            client={client}
-          />
-        ))}
-      </div>
+      <APILoader apiKey={GOOGLE_MAPS_API_KEY} version="beta">
+        <div className="place-suggestions-container">
+          {suggestionsData.places.map((place, index) => (
+            <PlaceSuggestionCard
+              key={`${place.placeId || place.name}-${index}`}
+              place={place}
+              tripId={suggestionsData.tripId}
+              client={client}
+            />
+          ))}
+        </div>
+      </APILoader>
     );
   }
 

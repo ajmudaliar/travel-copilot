@@ -71,13 +71,16 @@ function MapController() {
 
   // Handle panMapTo from store (e.g., when clicking "Show on Map" in chat)
   useEffect(() => {
-    if (mapTarget) {
+    if (mapTarget && !isNaN(mapTarget.lat) && !isNaN(mapTarget.lng)) {
       map.flyTo(
         [mapTarget.lat, mapTarget.lng],
         mapTarget.zoom || 15,
         { duration: 1 }
       );
       // Clear target after flying
+      clearMapTarget();
+    } else if (mapTarget) {
+      // Invalid coordinates, just clear the target
       clearMapTarget();
     }
   }, [mapTarget, map, clearMapTarget]);
