@@ -28,11 +28,12 @@ const CATEGORY_CONFIG: Record<string, { color: string; icon: string }> = {
 };
 
 // Create custom pin icon for a category
-function createPlaceIcon(category?: string): L.DivIcon {
+function createPlaceIcon(category?: string, isPreview = false): L.DivIcon {
   const config = CATEGORY_CONFIG[category || "default"] || CATEGORY_CONFIG.default;
+  const previewClass = isPreview ? " place-marker--preview" : "";
 
   return L.divIcon({
-    className: "place-marker",
+    className: `place-marker${previewClass}`,
     html: `
       <div class="place-marker__pin" style="background-color: ${config.color}">
         <span class="place-marker__icon">${config.icon}</span>
@@ -49,13 +50,25 @@ function createPlaceIcon(category?: string): L.DivIcon {
 const DEFAULT_CENTER: [number, number] = [20, 0];
 const DEFAULT_ZOOM = 2;
 
-// Component to handle map view changes
+// Component to handle map view changes and events
 function MapController() {
   const map = useMap();
   const selectedTrip = useTravelStore((state) => state.getSelectedTrip());
   const mapTarget = useTravelStore((state) => state.mapTarget);
   const clearMapTarget = useTravelStore((state) => state.clearMapTarget);
+  const setPreviewPlace = useTravelStore((state) => state.setPreviewPlace);
   const prevTripIdRef = useRef<string | null>(null);
+
+  // Clear preview marker when clicking on the map
+  useEffect(() => {
+    const handleClick = () => {
+      setPreviewPlace(null);
+    };
+    map.on("click", handleClick);
+    return () => {
+      map.off("click", handleClick);
+    };
+  }, [map, setPreviewPlace]);
 
   // Handle trip selection changes
   useEffect(() => {
@@ -93,6 +106,7 @@ export function MapCanvas() {
   const places = useTravelStore((state) => state.places);
   const selectedTripId = useTravelStore((state) => state.selectedTripId);
   const selectTrip = useTravelStore((state) => state.selectTrip);
+  const previewPlace = useTravelStore((state) => state.previewPlace);
 
   // Filter places for selected trip
   const tripPlaces = selectedTripId
@@ -157,6 +171,24 @@ export function MapCanvas() {
           </Popup>
         </Marker>
       ))}
+
+      {/* Preview marker (from chat suggestions) */}
+      {previewPlace && (
+        <Marker
+          position={[previewPlace.latitude, previewPlace.longitude]}
+          icon={createPlaceIcon(previewPlace.category, true)}
+        >
+          <Popup>
+            <div className="place-popup place-popup--preview">
+              <strong>{previewPlace.name}</strong>
+              {previewPlace.category && (
+                <span className="place-category">{previewPlace.category}</span>
+              )}
+              <p className="preview-hint">Click + in chat to add to trip</p>
+            </div>
+          </Popup>
+        </Marker>
+      )}
     </MapContainer>
   );
 }

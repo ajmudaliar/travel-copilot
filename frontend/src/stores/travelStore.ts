@@ -8,6 +8,14 @@ interface MapTarget {
   zoom?: number;
 }
 
+// Preview place for showing temporary marker on map
+interface PreviewPlace {
+  name: string;
+  latitude: number;
+  longitude: number;
+  category?: string;
+}
+
 interface TravelStore extends TravelState {
   // User info (for API calls)
   userId: string | null;
@@ -17,6 +25,10 @@ interface TravelStore extends TravelState {
   mapTarget: MapTarget | null;
   panMapTo: (lat: number, lng: number, zoom?: number) => void;
   clearMapTarget: () => void;
+
+  // Preview place (temporary marker on map)
+  previewPlace: PreviewPlace | null;
+  setPreviewPlace: (place: PreviewPlace | null) => void;
 
   // Actions
   setTrips: (trips: Trip[]) => void;
@@ -46,6 +58,7 @@ export const useTravelStore = create<TravelStore>((set, get) => ({
   isSearching: false,
   searchResults: [],
   mapTarget: null,
+  previewPlace: null,
 
   // User
   setUserId: (userId) => set({ userId }),
@@ -53,6 +66,9 @@ export const useTravelStore = create<TravelStore>((set, get) => ({
   // Map control
   panMapTo: (lat, lng, zoom) => set({ mapTarget: { lat, lng, zoom } }),
   clearMapTarget: () => set({ mapTarget: null }),
+
+  // Preview place
+  setPreviewPlace: (place) => set({ previewPlace: place }),
 
   // Trip actions
   setTrips: (trips) => set({ trips }),

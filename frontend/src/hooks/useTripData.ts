@@ -116,5 +116,37 @@ export function useTripData() {
     }
   }, [selectTrip, fetchPlaces]);
 
-  return { fetchTrips, fetchPlaces, restoreUserState };
+  /**
+   * Add a place to a trip by calling the bot action.
+   */
+  const addPlaceToTrip = useCallback(async (input: {
+    tripId: string;
+    placeId?: string;
+    name: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    rating?: number;
+    category?: string;
+  }): Promise<{ success: boolean; placeId?: string; error?: string }> => {
+    const bpClient = getClient();
+    if (!bpClient) {
+      return { success: false, error: "Client not initialized" };
+    }
+
+    try {
+      const result = await bpClient.callAction({
+        type: "addPlaceToTrip",
+        input,
+      });
+
+      const output = result.output as { success: boolean; placeId?: string; error?: string };
+      return output;
+    } catch (error) {
+      console.error("Failed to add place:", error);
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+    }
+  }, []);
+
+  return { fetchTrips, fetchPlaces, restoreUserState, addPlaceToTrip };
 }

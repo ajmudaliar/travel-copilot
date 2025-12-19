@@ -1,5 +1,5 @@
-import { useEffect, useRef, createContext, useContext } from "react";
-import type { FC, ReactNode } from "react";
+import { useEffect, useRef } from "react";
+import type { FC } from "react";
 import type { BlockObjects } from "@botpress/webchat";
 import { APILoader } from "@googlemaps/extended-component-library/react";
 import { useTravelStore } from "../stores/travelStore";
@@ -7,30 +7,6 @@ import { useTripData } from "../hooks/useTripData";
 import { PlaceSuggestionCard, type PlaceSuggestion } from "./PlaceSuggestionCard";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
-
-// Webchat client type for callAction
-interface WebchatClient {
-  callAction: (input: { type: string; input: Record<string, unknown> }) => Promise<{
-    output: Record<string, unknown>;
-  }>;
-}
-
-// Context to pass webchat client to custom renderers
-const WebchatClientContext = createContext<WebchatClient | null>(null);
-
-export function WebchatClientProvider({
-  client,
-  children,
-}: {
-  client: WebchatClient | null;
-  children: ReactNode;
-}) {
-  return (
-    <WebchatClientContext.Provider value={client}>
-      {children}
-    </WebchatClientContext.Provider>
-  );
-}
 
 // Notification types from bot
 type UINotification =
@@ -50,7 +26,6 @@ interface PlaceSuggestionsData {
  * Custom renderer for handling UI notifications and place suggestions from the bot.
  */
 const CustomRenderer: FC<BlockObjects["custom"]> = (props) => {
-  const client = useContext(WebchatClientContext);
   const selectTrip = useTravelStore((state) => state.selectTrip);
   const panMapTo = useTravelStore((state) => state.panMapTo);
   const { fetchTrips, fetchPlaces } = useTripData();
@@ -100,7 +75,6 @@ const CustomRenderer: FC<BlockObjects["custom"]> = (props) => {
               key={`${place.placeId || place.name}-${index}`}
               place={place}
               tripId={suggestionsData.tripId}
-              client={client}
             />
           ))}
         </div>

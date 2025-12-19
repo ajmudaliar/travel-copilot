@@ -18,11 +18,6 @@ export interface PlaceSuggestion {
 interface PlaceSuggestionCardProps {
   place: PlaceSuggestion;
   tripId: string | null;
-  client: {
-    callAction: (input: { type: string; input: Record<string, unknown> }) => Promise<{
-      output: Record<string, unknown>;
-    }>;
-  } | null;
 }
 
 // Category icons for fallback display
@@ -36,14 +31,22 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
-export function PlaceSuggestionCard({ place, tripId, client }: PlaceSuggestionCardProps) {
+export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps) {
   const [isAdded, setIsAdded] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
   const panMapTo = useTravelStore((state) => state.panMapTo);
-  const { fetchPlaces } = useTripData();
+  const setPreviewPlace = useTravelStore((state) => state.setPreviewPlace);
+  const { fetchPlaces, addPlaceToTrip } = useTripData();
 
   const handleShowOnMap = () => {
+    // Set preview marker and pan to location
+    setPreviewPlace({
+      name: place.name,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      category: place.category,
+    });
     panMapTo(place.latitude, place.longitude, 16);
   };
 
@@ -55,30 +58,27 @@ export function PlaceSuggestionCard({ place, tripId, client }: PlaceSuggestionCa
   };
 
   const handleAddToTrip = async () => {
-    if (!client || !tripId || isAdded || isAdding) return;
+    if (!tripId || isAdded || isAdding) return;
 
     setIsAdding(true);
     try {
-      const result = await client.callAction({
-        type: "addPlaceToTrip",
-        input: {
-          tripId,
-          placeId: place.placeId,
-          name: place.name,
-          address: place.address,
-          latitude: place.latitude,
-          longitude: place.longitude,
-          rating: place.rating,
-          category: place.category,
-        },
+      const result = await addPlaceToTrip({
+        tripId,
+        placeId: place.placeId,
+        name: place.name,
+        address: place.address,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        rating: place.rating,
+        category: place.category,
       });
 
-      if (result.output.success) {
+      if (result.success) {
         setIsAdded(true);
         // Refresh places in the trip panel
         fetchPlaces(tripId);
       } else {
-        console.error("Failed to add place:", result.output.error);
+        console.error("Failed to add place:", result.error);
       }
     } catch (error) {
       console.error("Error adding place:", error);

@@ -71,3 +71,25 @@
 .place-marker__pin {
   animation: marker-bounce 0.3s ease-out;
 }
+
+/* Preview marker - pulsing effect */
+.place-marker--preview .place-marker__pin {
+  animation: marker-bounce 0.3s ease-out, marker-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes marker-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 12px rgba(102, 126, 234, 0);
+  }
+}
+
+/* Preview popup hint */
+.preview-hint {
+  font-size: 11px;
+  color: #667eea;
+  margin-top: 4px;
+  font-style: italic;
+}

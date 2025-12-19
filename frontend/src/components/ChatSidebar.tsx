@@ -8,7 +8,7 @@ import {
 } from "@botpress/webchat";
 import type { BlockMessage } from "@botpress/webchat";
 import { useTravelStore } from "../stores/travelStore";
-import CustomRenderer, { WebchatClientProvider } from "./CustomRenderer";
+import CustomRenderer from "./CustomRenderer";
 import { useTripData } from "../hooks/useTripData";
 
 interface ChatSidebarProps {
@@ -139,30 +139,28 @@ export function ChatSidebar({ clientId }: ChatSidebarProps) {
 
       {/* Chat Container */}
       <div className="chat-container">
-        <WebchatClientProvider client={client as Parameters<typeof WebchatClientProvider>[0]["client"]}>
-          <Container connected={isConnected}>
-            <MessageList
-              botName={BOT_CONFIG.name}
-              botDescription={BOT_CONFIG.description}
-              isTyping={isTyping}
-              showMessageStatus={true}
-              showMarquee={true}
-              messages={enrichedMessages}
-              sendMessage={sendMessage}
-              renderers={{
-                custom: CustomRenderer,
-              }}
-            />
-            <Composer
-              disableComposer={false}
-              isReadOnly={false}
-              allowFileUpload={false}
-              connected={isConnected}
-              sendMessage={sendMessage}
-              composerPlaceholder="Plan your next adventure..."
-            />
-          </Container>
-        </WebchatClientProvider>
+        <Container connected={isConnected}>
+          <MessageList
+            botName={BOT_CONFIG.name}
+            botDescription={BOT_CONFIG.description}
+            isTyping={isTyping}
+            showMessageStatus={true}
+            showMarquee={true}
+            messages={enrichedMessages}
+            sendMessage={sendMessage}
+            renderers={{
+              custom: CustomRenderer,
+            }}
+          />
+          <Composer
+            disableComposer={false}
+            isReadOnly={false}
+            allowFileUpload={false}
+            connected={isConnected}
+            sendMessage={sendMessage}
+            composerPlaceholder="Plan your next adventure..."
+          />
+        </Container>
       </div>
       <StylesheetProvider
         radius={1}
