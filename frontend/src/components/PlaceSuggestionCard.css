@@ -1,7 +1,8 @@
+/* Card - no border/bg since webchat provides container */
 .place-suggestion-card {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
   padding: 12px 0;
 }
 
@@ -11,12 +12,15 @@
 
 /* Photo thumbnail */
 .place-suggestion-card__photo {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
   border-radius: 8px;
   overflow: hidden;
-  background: #f3f4f6;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .place-suggestion-card__photo img {
@@ -25,96 +29,33 @@
   object-fit: cover;
 }
 
-/* Place content area */
+.place-suggestion-card__photo-placeholder {
+  font-size: 24px;
+  opacity: 0.3;
+}
+
+/* Content area - flex grow */
 .place-suggestion-card__content {
   flex: 1;
   min-width: 0;
-}
-
-/* Action buttons - vertical stack on right, top aligned */
-.place-suggestion-card__actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex-shrink: 0;
-  padding-top: 4px;
-}
-
-.place-suggestion-card__btn {
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  color: #6b7280;
-}
-
-.place-suggestion-card__btn:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #374151;
-}
-
-.place-suggestion-card__btn--add {
-  color: #667eea;
-  border-color: #667eea;
-}
-
-.place-suggestion-card__btn--add:hover:not(:disabled) {
-  background: #667eea;
-  color: white;
-}
-
-.place-suggestion-card__btn--add:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.place-suggestion-card__btn--added {
-  background: #10b981;
-  border-color: #10b981;
-  color: white;
-}
-
-.place-suggestion-card__btn--added:hover {
-  background: #10b981;
-  color: white;
-}
-
-/* Fallback card (for mock data) */
-.place-suggestion-card__fallback {
-  padding: 4px 0;
-}
-
-.place-suggestion-card__header {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.place-suggestion-card__icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.place-suggestion-card__info {
-  flex: 1;
-  min-width: 0;
+  gap: 2px;
 }
 
 .place-suggestion-card__name {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: #1f2937;
+  color: #111827;
   line-height: 1.3;
+}
+
+.place-suggestion-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .place-suggestion-card__category {
@@ -127,19 +68,77 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: #374151;
-  flex-shrink: 0;
+  color: #d97706;
 }
 
-.place-suggestion-card__star {
-  font-size: 11px;
+.place-suggestion-card__rating::before {
+  content: "·";
+  color: #d1d5db;
+  margin-right: 4px;
 }
 
 .place-suggestion-card__address {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   font-size: 11px;
-  color: #6b7280;
+  color: #9ca3af;
   line-height: 1.4;
+}
+
+/* Action buttons - vertical */
+.place-suggestion-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.place-suggestion-card__btn {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #9ca3af;
+}
+
+.place-suggestion-card__btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.place-suggestion-card__btn--add {
+  color: #667eea;
+}
+
+.place-suggestion-card__btn--add:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+}
+
+.place-suggestion-card__btn--add:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.place-suggestion-card__btn--added {
+  background: #10b981;
+  color: white;
+}
+
+.place-suggestion-card__btn--added:hover {
+  background: #059669;
+}
+
+/* Container */
+.place-suggestions-container {
+  display: flex;
+  flex-direction: column;
 }

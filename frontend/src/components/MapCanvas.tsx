@@ -137,10 +137,10 @@ export function MapCanvas() {
         >
           <Popup>
             <div className="trip-popup">
-              <strong>{trip.name}</strong>
-              {trip.description && <p>{trip.description}</p>}
+              <h4 className="trip-popup__name">{trip.name}</h4>
+              {trip.description && <p className="trip-popup__description">{trip.description}</p>}
               {selectedTripId === trip.id && (
-                <span className="selected-badge">Selected</span>
+                <span className="trip-popup__badge">Selected</span>
               )}
             </div>
           </Popup>
@@ -156,17 +156,16 @@ export function MapCanvas() {
         >
           <Popup>
             <div className="place-popup">
-              <strong>{place.name}</strong>
-              {place.category && (
-                <span className="place-category">{place.category}</span>
-              )}
-              <p className="place-address">{place.address}</p>
-              {place.rating && (
-                <p className="place-rating">Rating: {place.rating}/5</p>
-              )}
-              {place.description && (
-                <p className="place-description">{place.description}</p>
-              )}
+              <h4 className="place-popup__name">{place.name}</h4>
+              <div className="place-popup__meta">
+                {place.category && (
+                  <span className="place-popup__category">{place.category}</span>
+                )}
+                {place.rating && (
+                  <span className="place-popup__rating">★ {place.rating}</span>
+                )}
+              </div>
+              <p className="place-popup__address">{place.address}</p>
             </div>
           </Popup>
         </Marker>
@@ -179,12 +178,24 @@ export function MapCanvas() {
           icon={createPlaceIcon(previewPlace.category, true)}
         >
           <Popup>
-            <div className="place-popup place-popup--preview">
-              <strong>{previewPlace.name}</strong>
-              {previewPlace.category && (
-                <span className="place-category">{previewPlace.category}</span>
+            <div className="place-popup">
+              {previewPlace.photoUrl && (
+                <div className="place-popup__photo">
+                  <img src={previewPlace.photoUrl} alt={previewPlace.name} />
+                </div>
               )}
-              <p className="preview-hint">Click + in chat to add to trip</p>
+              <h4 className="place-popup__name">{previewPlace.name}</h4>
+              {(previewPlace.category || previewPlace.rating) && (
+                <div className="place-popup__meta">
+                  {previewPlace.category && (
+                    <span className="place-popup__category">{previewPlace.category}</span>
+                  )}
+                  {previewPlace.rating && previewPlace.rating > 0 && (
+                    <span className="place-popup__rating">★ {previewPlace.rating.toFixed(1)}</span>
+                  )}
+                </div>
+              )}
+              <p className="place-popup__hint">Click + in chat to add to trip</p>
             </div>
           </Popup>
         </Marker>

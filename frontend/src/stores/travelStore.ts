@@ -14,6 +14,8 @@ interface PreviewPlace {
   latitude: number;
   longitude: number;
   category?: string;
+  photoUrl?: string;
+  rating?: number;
 }
 
 interface TravelStore extends TravelState {

@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { MapPin, ExternalLink, Plus, Check, UtensilsCrossed, Coffee, Hotel, Camera } from "lucide-react";
 import { useTravelStore } from "../stores/travelStore";
 import { useTripData } from "../hooks/useTripData";
 import "./PlaceSuggestionCard.css";
 
-// Place data from the bot
 export interface PlaceSuggestion {
   placeId: string;
   name: string;
@@ -12,7 +12,7 @@ export interface PlaceSuggestion {
   longitude: number;
   rating: number;
   category: string;
-  photoUrl?: string; // Optional photo from search
+  photoUrl?: string;
 }
 
 interface PlaceSuggestionCardProps {
@@ -20,13 +20,12 @@ interface PlaceSuggestionCardProps {
   tripId: string | null;
 }
 
-// Category icons for fallback display
-const CATEGORY_ICONS: Record<string, string> = {
-  restaurant: "🍴",
-  cafe: "☕",
-  hotel: "🏨",
-  attraction: "📸",
-  default: "📍",
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  restaurant: <UtensilsCrossed size={20} />,
+  cafe: <Coffee size={20} />,
+  hotel: <Hotel size={20} />,
+  attraction: <Camera size={20} />,
+  default: <MapPin size={20} />,
 };
 
 export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps) {
@@ -38,12 +37,13 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
   const { fetchPlaces, addPlaceToTrip } = useTripData();
 
   const handleShowOnMap = () => {
-    // Set preview marker and pan to location
     setPreviewPlace({
       name: place.name,
       latitude: place.latitude,
       longitude: place.longitude,
       category: place.category,
+      photoUrl: place.photoUrl,
+      rating: place.rating,
     });
     panMapTo(place.latitude, place.longitude, 16);
   };
@@ -51,8 +51,8 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
   const handleOpenGoogleMaps = () => {
     const url = place.placeId
       ? `https://www.google.com/maps/place/?q=place_id:${place.placeId}`
-      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + place.address)}`;
-    window.open(url, '_blank');
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + " " + place.address)}`;
+    window.open(url, "_blank");
   };
 
   const handleAddToTrip = async () => {
@@ -73,10 +73,7 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
 
       if (result.success) {
         setIsAdded(true);
-        // Refresh places in the trip panel
         fetchPlaces(tripId);
-      } else {
-        console.error("Failed to add place:", result.error);
       }
     } catch (error) {
       console.error("Error adding place:", error);
@@ -85,60 +82,43 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
     }
   };
 
-  const categoryIcon = CATEGORY_ICONS[place.category] || CATEGORY_ICONS.default;
+  const placeholderIcon = CATEGORY_ICONS[place.category] || CATEGORY_ICONS.default;
 
   return (
     <div className="place-suggestion-card">
-      {/* Photo (if available) */}
-      {place.photoUrl && (
-        <div className="place-suggestion-card__photo">
+      <div className="place-suggestion-card__photo">
+        {place.photoUrl ? (
           <img src={place.photoUrl} alt={place.name} />
-        </div>
-      )}
+        ) : (
+          <span className="place-suggestion-card__photo-placeholder">{placeholderIcon}</span>
+        )}
+      </div>
 
-      {/* Place Content */}
       <div className="place-suggestion-card__content">
-        <div className="place-suggestion-card__header">
-          <span className="place-suggestion-card__icon">{categoryIcon}</span>
-          <div className="place-suggestion-card__info">
-            <h4 className="place-suggestion-card__name">{place.name}</h4>
-            <span className="place-suggestion-card__category">{place.category}</span>
-          </div>
+        <h4 className="place-suggestion-card__name">{place.name}</h4>
+        <div className="place-suggestion-card__meta">
+          <span className="place-suggestion-card__category">{place.category}</span>
           {place.rating > 0 && (
-            <div className="place-suggestion-card__rating">
-              <span className="place-suggestion-card__star">⭐</span>
-              <span>{place.rating.toFixed(1)}</span>
-            </div>
+            <span className="place-suggestion-card__rating">★ {place.rating.toFixed(1)}</span>
           )}
         </div>
         <p className="place-suggestion-card__address">{place.address}</p>
       </div>
 
-      {/* Action Buttons - Right Side */}
       <div className="place-suggestion-card__actions">
-        <button
-          className="place-suggestion-card__btn"
-          onClick={handleShowOnMap}
-          title="Show on map"
-        >
-          📍
+        <button className="place-suggestion-card__btn" onClick={handleShowOnMap} title="Show on map">
+          <MapPin size={14} />
+        </button>
+        <button className="place-suggestion-card__btn" onClick={handleOpenGoogleMaps} title="Open in Google Maps">
+          <ExternalLink size={14} />
         </button>
         <button
-          className="place-suggestion-card__btn"
-          onClick={handleOpenGoogleMaps}
-          title="Open in Google Maps"
-        >
-          ↗
-        </button>
-        <button
-          className={`place-suggestion-card__btn place-suggestion-card__btn--add ${
-            isAdded ? "place-suggestion-card__btn--added" : ""
-          }`}
+          className={`place-suggestion-card__btn place-suggestion-card__btn--add ${isAdded ? "place-suggestion-card__btn--added" : ""}`}
           onClick={handleAddToTrip}
           disabled={!tripId || isAdded || isAdding}
           title={!tripId ? "Select a trip first" : isAdded ? "Added" : "Add to trip"}
         >
-          {isAdding ? "..." : isAdded ? "✓" : "+"}
+          {isAdded ? <Check size={14} /> : <Plus size={14} />}
         </button>
       </div>
     </div>
