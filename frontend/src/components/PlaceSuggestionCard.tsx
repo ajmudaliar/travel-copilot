@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { PlaceDataProvider, PlaceOverview } from "@googlemaps/extended-component-library/react";
 import { useTravelStore } from "../stores/travelStore";
 import { useTripData } from "../hooks/useTripData";
 import "./PlaceSuggestionCard.css";
@@ -13,6 +12,7 @@ export interface PlaceSuggestion {
   longitude: number;
   rating: number;
   category: string;
+  photoUrl?: string; // Optional photo from search
 }
 
 interface PlaceSuggestionCardProps {
@@ -28,8 +28,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   attraction: "📸",
   default: "📍",
 };
-
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
 export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps) {
   const [isAdded, setIsAdded] = useState(false);
@@ -88,34 +86,32 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
   };
 
   const categoryIcon = CATEGORY_ICONS[place.category] || CATEGORY_ICONS.default;
-  const hasGooglePlaceId = place.placeId && GOOGLE_MAPS_API_KEY;
 
   return (
     <div className="place-suggestion-card">
+      {/* Photo (if available) */}
+      {place.photoUrl && (
+        <div className="place-suggestion-card__photo">
+          <img src={place.photoUrl} alt={place.name} />
+        </div>
+      )}
+
       {/* Place Content */}
       <div className="place-suggestion-card__content">
-        {hasGooglePlaceId ? (
-          <PlaceDataProvider place={place.placeId}>
-            <PlaceOverview size="medium" googleLogoAlreadyDisplayed />
-          </PlaceDataProvider>
-        ) : (
-          <div className="place-suggestion-card__fallback">
-            <div className="place-suggestion-card__header">
-              <span className="place-suggestion-card__icon">{categoryIcon}</span>
-              <div className="place-suggestion-card__info">
-                <h4 className="place-suggestion-card__name">{place.name}</h4>
-                <span className="place-suggestion-card__category">{place.category}</span>
-              </div>
-              {place.rating > 0 && (
-                <div className="place-suggestion-card__rating">
-                  <span className="place-suggestion-card__star">⭐</span>
-                  <span>{place.rating.toFixed(1)}</span>
-                </div>
-              )}
-            </div>
-            <p className="place-suggestion-card__address">{place.address}</p>
+        <div className="place-suggestion-card__header">
+          <span className="place-suggestion-card__icon">{categoryIcon}</span>
+          <div className="place-suggestion-card__info">
+            <h4 className="place-suggestion-card__name">{place.name}</h4>
+            <span className="place-suggestion-card__category">{place.category}</span>
           </div>
-        )}
+          {place.rating > 0 && (
+            <div className="place-suggestion-card__rating">
+              <span className="place-suggestion-card__star">⭐</span>
+              <span>{place.rating.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+        <p className="place-suggestion-card__address">{place.address}</p>
       </div>
 
       {/* Action Buttons - Right Side */}

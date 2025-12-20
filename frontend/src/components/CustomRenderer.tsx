@@ -1,12 +1,9 @@
 import { useEffect, useRef } from "react";
 import type { FC } from "react";
 import type { BlockObjects } from "@botpress/webchat";
-import { APILoader } from "@googlemaps/extended-component-library/react";
 import { useTravelStore } from "../stores/travelStore";
 import { useTripData } from "../hooks/useTripData";
 import { PlaceSuggestionCard, type PlaceSuggestion } from "./PlaceSuggestionCard";
-
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
 // Notification types from bot
 type UINotification =
@@ -68,17 +65,15 @@ const CustomRenderer: FC<BlockObjects["custom"]> = (props) => {
   if (url === "custom://place-suggestions" && data && "places" in data) {
     const suggestionsData = data as PlaceSuggestionsData;
     return (
-      <APILoader apiKey={GOOGLE_MAPS_API_KEY} version="beta">
-        <div className="place-suggestions-container">
-          {suggestionsData.places.map((place, index) => (
-            <PlaceSuggestionCard
-              key={`${place.placeId || place.name}-${index}`}
-              place={place}
-              tripId={suggestionsData.tripId}
-            />
-          ))}
-        </div>
-      </APILoader>
+      <div className="place-suggestions-container">
+        {suggestionsData.places.map((place, index) => (
+          <PlaceSuggestionCard
+            key={`${place.placeId || place.name}-${index}`}
+            place={place}
+            tripId={suggestionsData.tripId}
+          />
+        ))}
+      </div>
     );
   }
 

@@ -19,6 +19,7 @@ interface PlaceSuggestion {
   longitude: number;
   rating: number;
   category: string;
+  photoUrl?: string;
 }
 
 /**

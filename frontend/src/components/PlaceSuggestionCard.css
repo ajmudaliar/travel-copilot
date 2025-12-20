@@ -9,29 +9,26 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
+/* Photo thumbnail */
+.place-suggestion-card__photo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.place-suggestion-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Place content area */
 .place-suggestion-card__content {
   flex: 1;
   min-width: 0;
-}
-
-/* Google PlaceOverview style overrides to match app */
-.place-suggestion-card__content gmpx-place-overview {
-  /* Font sizes (25% smaller) */
-  --gmpx-font-size-base: 10px;
-  --gmpx-font-size-small: 8px;
-  --gmpx-font-size-large: 11px;
-
-  /* Colors to match app theme */
-  --gmpx-color-primary: #667eea;
-  --gmpx-color-on-primary: white;
-  --gmpx-color-surface: white;
-  --gmpx-color-on-surface: #1f2937;
-  --gmpx-color-on-surface-variant: #6b7280;
-
-  /* Font family */
-  --gmpx-font-family-base: system-ui, -apple-system, sans-serif;
-  --gmpx-font-family-headings: system-ui, -apple-system, sans-serif;
 }
 
 /* Action buttons - vertical stack on right, top aligned */

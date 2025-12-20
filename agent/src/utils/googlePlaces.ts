@@ -12,6 +12,13 @@ interface PlaceResult {
   longitude: number;
   rating: number;
   category: string;
+  photoUrl?: string;
+}
+
+interface GooglePhoto {
+  name: string;
+  widthPx: number;
+  heightPx: number;
 }
 
 interface GooglePlaceResult {
@@ -22,6 +29,15 @@ interface GooglePlaceResult {
   rating?: number;
   primaryType?: string;
   types?: string[];
+  photos?: GooglePhoto[];
+}
+
+/**
+ * Build a photo URL from Google Places photo reference
+ */
+function buildPhotoUrl(photoName: string, maxWidth = 400): string {
+  if (!GOOGLE_PLACES_API_KEY) return "";
+  return `https://places.googleapis.com/v1/${photoName}/media?key=${GOOGLE_PLACES_API_KEY}&maxWidthPx=${maxWidth}`;
 }
 
 /**
@@ -89,7 +105,7 @@ export async function searchGooglePlaces(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.types,places.primaryType",
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.types,places.primaryType,places.photos",
         },
         body: JSON.stringify({
           textQuery: searchQuery,
@@ -108,15 +124,23 @@ export async function searchGooglePlaces(
     const data = await response.json();
     const places: GooglePlaceResult[] = data.places || [];
 
-    const results: PlaceResult[] = places.map((place) => ({
-      placeId: place.id || "",
-      name: place.displayName?.text || "Unknown",
-      address: place.formattedAddress || "",
-      latitude: place.location?.latitude || 0,
-      longitude: place.location?.longitude || 0,
-      rating: place.rating || 0,
-      category: mapGoogleTypeToCategory(place.types || []),
-    }));
+    const results: PlaceResult[] = places.map((place) => {
+      // Get first photo URL if available
+      const photoUrl = place.photos?.[0]?.name
+        ? buildPhotoUrl(place.photos[0].name)
+        : undefined;
+
+      return {
+        placeId: place.id || "",
+        name: place.displayName?.text || "Unknown",
+        address: place.formattedAddress || "",
+        latitude: place.location?.latitude || 0,
+        longitude: place.location?.longitude || 0,
+        rating: place.rating || 0,
+        category: mapGoogleTypeToCategory(place.types || []),
+        photoUrl,
+      };
+    });
 
     return {
       results,
