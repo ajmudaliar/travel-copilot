@@ -77,6 +77,7 @@ export function useTripData() {
         rating: row.rating as number | undefined,
         description: row.description as string | undefined,
         category: row.category as string | undefined,
+        photoUrl: row.photoUrl as string | undefined,
         createdAt: row.createdAt || new Date().toISOString(),
       }));
 
@@ -128,6 +129,7 @@ export function useTripData() {
     longitude: number;
     rating?: number;
     category?: string;
+    photoUrl?: string;
   }): Promise<{ success: boolean; placeId?: string; error?: string }> => {
     const bpClient = getClient();
     if (!bpClient) {

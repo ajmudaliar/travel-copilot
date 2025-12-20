@@ -20,6 +20,7 @@ export const addPlaceToTrip = new Action({
     longitude: z.number().describe("Place longitude"),
     rating: z.number().optional().describe("Place rating (0-5)"),
     category: z.string().optional().describe("Category: restaurant, hotel, attraction, cafe, etc."),
+    photoUrl: z.string().optional().describe("Photo URL from Google Places"),
   }),
 
   output: z.object({
@@ -54,6 +55,7 @@ export const addPlaceToTrip = new Action({
             longitude: input.longitude,
             rating: input.rating,
             category: input.category,
+            photoUrl: input.photoUrl,
           },
         ],
       });

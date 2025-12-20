@@ -15,5 +15,6 @@ export const placesTable = new Table({
     rating: z.number().optional().describe("Place rating (0-5)"),
     description: z.string().optional().describe("Place description"),
     category: z.string().optional().describe("Category: restaurant, hotel, attraction, cafe, etc."),
+    photoUrl: z.string().optional().describe("Photo URL from Google Places"),
   },
 });

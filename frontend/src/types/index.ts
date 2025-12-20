@@ -25,6 +25,7 @@ export interface Place {
   rating?: number;
   description?: string;
   category?: string;
+  photoUrl?: string;
   createdAt: string;
 }
 

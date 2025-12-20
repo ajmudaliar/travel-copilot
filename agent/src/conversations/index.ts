@@ -15,6 +15,7 @@ const searchResultSchema = z.object({
   longitude: z.number(),
   rating: z.number(),
   category: z.string(),
+  photoUrl: z.string().optional(),
 });
 
 /**
@@ -111,7 +112,7 @@ export const Chat = new Conversation({
         ? lastSearchResults
             .map(
               (r, i) =>
-                `${i + 1}. "${r.name}" - address: "${r.address}", placeId: ${r.placeId}, lat: ${r.latitude}, lng: ${r.longitude}, category: ${r.category}, rating: ${r.rating}`
+                `${i + 1}. "${r.name}" - address: "${r.address}", placeId: ${r.placeId}, lat: ${r.latitude}, lng: ${r.longitude}, category: ${r.category}, rating: ${r.rating}${r.photoUrl ? `, photoUrl: ${r.photoUrl}` : ""}`
             )
             .join("\n")
         : "None";
@@ -137,6 +138,7 @@ export const Chat = new Conversation({
               longitude: r.longitude,
               rating: r.rating || 0,
               category: r.category || "place",
+              photoUrl: r.photoUrl,
             }));
           }
         },

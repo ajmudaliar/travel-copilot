@@ -82,6 +82,7 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
         longitude: place.longitude,
         rating: place.rating,
         category: place.category,
+        photoUrl: place.photoUrl,
       });
 
       if (result.success) {

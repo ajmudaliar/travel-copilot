@@ -156,13 +156,18 @@ export function MapCanvas() {
         >
           <Popup>
             <div className="place-popup">
+              {place.photoUrl && (
+                <div className="place-popup__photo">
+                  <img src={place.photoUrl} alt={place.name} />
+                </div>
+              )}
               <h4 className="place-popup__name">{place.name}</h4>
               <div className="place-popup__meta">
                 {place.category && (
                   <span className="place-popup__category">{place.category}</span>
                 )}
                 {place.rating && (
-                  <span className="place-popup__rating">★ {place.rating}</span>
+                  <span className="place-popup__rating">★ {place.rating.toFixed(1)}</span>
                 )}
               </div>
               <p className="place-popup__address">{place.address}</p>

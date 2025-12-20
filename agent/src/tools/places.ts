@@ -72,6 +72,7 @@ export const addPlaceTool = new Autonomous.Tool({
     rating: z.number().optional().describe("Place rating (0-5)"),
     description: z.string().optional().describe("Brief description of the place"),
     category: z.string().optional().describe("Category: restaurant, hotel, attraction, cafe, etc."),
+    photoUrl: z.string().optional().describe("Photo URL"),
   }),
 
   output: z.object({
@@ -125,6 +126,7 @@ export const addPlaceTool = new Autonomous.Tool({
             rating: input.rating,
             description: input.description,
             category: input.category,
+            photoUrl: input.photoUrl,
           },
         ],
       });
@@ -389,6 +391,7 @@ export const searchPlacesTool = new Autonomous.Tool({
         longitude: z.number(),
         rating: z.number(),
         category: z.string(),
+        photoUrl: z.string().optional().describe("Photo URL - pass this to addPlace"),
       })
     ),
     count: z.number(),
