@@ -10,7 +10,8 @@ A conversational travel planning application built with **Botpress ADK** and **R
 - **Google Places Integration** - Search for restaurants, hotels, attractions with real data
 - **Interactive Map** - Leaflet-based map with custom markers and preview pins
 - **Real-time State Sync** - Frontend stays in sync with agent state via custom events
-- **Google Places UI Kit** - Rich place cards with photos, ratings, and details
+- **Interactive Place Cards** - Hover to preview on map, click to zoom, with photos and ratings
+- **Smart Caching** - Search results cached to avoid redundant API calls
 
 ## Architecture
 
@@ -185,21 +186,29 @@ if (url === "custom://travel-notification") {
 
 ### 3. Place Search & Cards
 
-Search results are sent as custom messages with place data:
+Search results are sent as custom messages with place data (including photo URLs):
 
 ```typescript
 // agent/src/tools/places.ts
 await sendPlaceSuggestions(results, tripId);
 ```
 
-The frontend renders them using **Google's Extended Component Library**:
+The frontend renders interactive cards with **hover-to-preview** behavior:
 
 ```tsx
 // frontend/src/components/PlaceSuggestionCard.tsx
-<PlaceDataProvider place={place.placeId}>
-  <PlaceOverview size="medium" googleLogoAlreadyDisplayed />
-</PlaceDataProvider>
+<div
+  className="place-suggestion-card"
+  onMouseEnter={handleMouseEnter}  // Shows preview marker
+  onClick={handleCardClick}         // Pans/zooms map
+>
+  <img src={place.photoUrl} />
+  <h4>{place.name}</h4>
+  <span>★ {place.rating}</span>
+</div>
 ```
+
+Search results are **cached in conversation state** so when the user asks to add a place, the bot uses cached data instead of re-searching.
 
 ### 4. Frontend Actions
 
@@ -252,7 +261,6 @@ const addPlaceToTrip = async (input) => {
    VITE_WEBCHAT_CLIENT_ID=your_webchat_client_id
    VITE_BOT_ID=your_bot_id
    VITE_BOTPRESS_TOKEN=your_pat_token
-   VITE_GOOGLE_MAPS_API_KEY=your_google_api_key
    ```
 
 3. **Run development servers**
@@ -286,8 +294,12 @@ Place cards appear with photos, ratings, and action buttons.
 Click the **+** button on any place card, or say:
 > "Add Cafe Olimpico to my trip"
 
+The bot uses cached search results - no need to re-search!
+
 ### View on Map
-Click the **📍** button to see a preview marker on the map.
+**Hover** over a place card to see a preview marker on the map.
+**Click** the card to pan and zoom to that location.
+The preview marker (purple, pulsing) stays visible until you click elsewhere on the map.
 
 ### Remove Places
 > "Remove Cafe Olimpico from my trip"
@@ -319,8 +331,14 @@ You are Travel Copilot, a friendly travel planning assistant.
 ## Troubleshooting
 
 ### Places not showing photos
-- Ensure you're using `size="medium"` or larger for PlaceOverview
-- Verify Google Maps API key has Places API enabled
+- Photos come from Google Places search results
+- Ensure GOOGLE_PLACES_API_KEY is set in agent/.env
+- Photo URLs are captured during search and stored with place data
+
+### Bot re-searches when adding places
+- Search results are cached in conversation state
+- Check that `lastSearchResults` is being populated in the conversation handler
+- Start a new conversation if state is stale
 
 ### Duplicate trips/places created
 - The tools have deduplication: trips by name, places by coordinates

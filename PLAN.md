@@ -96,19 +96,21 @@ A conversational travel planner where users can:
 - [x] `searchPlaces` tool with Google Places API
 - [x] `addPlaceToTrip` action (callable from frontend)
 - [x] Place search via conversation
-- [x] PlaceSuggestionCard with Google Places UI Kit
+- [x] PlaceSuggestionCard with Lucide icons (replaced Google UI Kit to reduce API costs)
+- [x] Hover card to preview on map, click to zoom
 - [x] "Add to Trip" button on cards
-- [x] "Show on Map" with preview marker
 - [x] "Open in Google Maps" external link
 
 ### Phase 5: Enhanced UX ✅
 
-- [x] Google PlaceOverview component (photos, ratings, hours)
+- [x] Custom PlaceSuggestionCard (photos, ratings from search - no extra API calls)
 - [x] Custom message rendering via CustomRenderer
 - [x] UI notifications (refresh_trips, refresh_places, select_trip)
 - [x] Typing indicator during operations
 - [x] Map panning from chat actions
-- [x] Conversation context (don't re-search for known places)
+- [x] Cached search results in conversation state (don't re-search when adding)
+- [x] Interactive card hover/click for map preview
+- [x] Distinct purple preview marker with pulse animation
 
 ### Phase 6: Production Readiness 🔄
 
@@ -193,13 +195,20 @@ travel-copilot/
 
 ### 4. Google Places Integration
 - Backend: Text Search API via fetch (agent/src/utils/googlePlaces.ts)
-- Frontend: Extended Component Library for PlaceOverview cards
-- Single APILoader wrapper per message group
+- Frontend: Custom cards using data from search (no additional API calls)
+- Photo URLs captured during search and displayed in cards
+- Removed Google Extended Component Library to reduce API costs
 
 ### 5. Map Preview
-- Clicking "Show on Map" sets previewPlace in store
-- MapCanvas renders pulsing preview marker
+- Hovering card shows preview marker on map
+- Clicking card pans/zooms to location
+- Preview marker uses distinct purple color (#667eea) with pulse animation
 - Clicking map clears preview
+
+### 6. Search Result Caching
+- Search results cached in conversation state (lastSearchResults)
+- When user asks to add a place, bot uses cached data instead of re-searching
+- Reduces API calls and improves response time
 
 ---
 
@@ -215,7 +224,6 @@ GOOGLE_PLACES_API_KEY=your_key
 VITE_WEBCHAT_CLIENT_ID=your_client_id
 VITE_BOT_ID=your_bot_id
 VITE_BOTPRESS_TOKEN=your_pat_token
-VITE_GOOGLE_MAPS_API_KEY=your_key
 ```
 
 ---
