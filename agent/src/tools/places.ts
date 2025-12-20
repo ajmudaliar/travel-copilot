@@ -371,12 +371,12 @@ const MOCK_PLACES: Record<string, Array<{
  */
 export const searchPlacesTool = new Autonomous.Tool({
   name: "searchPlaces",
-  description: "Search for places like restaurants, cafes, hotels, or attractions. Use this when the user wants to find places to add to their trip.",
+  description: "Search for places like restaurants, cafes, hotels, bars, or attractions.",
 
   input: z.object({
-    query: z.string().describe("Search query, e.g., 'restaurants in Paris' or 'coffee shops near Eiffel Tower'"),
-    category: z.string().optional().describe("Category filter: restaurant, cafe, hotel, attraction"),
-    nearCity: z.string().optional().describe("City to search in"),
+    query: z.string().describe("Full search query including location context, e.g., 'coffee shops in Old Montreal' or 'bars near Peel Street'"),
+    category: z.string().optional().describe("Category: restaurant, cafe, hotel, bar, attraction"),
+    nearCity: z.string().optional().describe("City name for context"),
   }),
 
   output: z.object({

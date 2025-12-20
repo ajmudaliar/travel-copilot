@@ -163,6 +163,7 @@ ${cachedResultsSummary}
 3. **Adding places**: Use tripId: ${selectedTrip?.id || "none"}. If no trip selected, ask user to select one first.
 
 ## CRITICAL RULES
+- **Preserve user specificity**: When the user mentions specific locations, streets, neighborhoods, or landmarks, ALWAYS include them in your tool calls. Never generalize or drop details. Example: "bars near Peel" → search for "bars near Peel Street Montreal", NOT just "bars".
 - Use markdown for formatting (e.g., **bold**, *italic*), NOT HTML tags.
 - When searching for places with searchPlaces, DO NOT list or describe the results in your response. The results are automatically displayed as interactive cards in the UI. Just say something brief like "Here are some options:".
 - **NEVER search again for places that are in "Recent search results" above.** If the user wants to add a place from those results, use addPlace directly with the data shown above. Only call searchPlaces for NEW searches.
