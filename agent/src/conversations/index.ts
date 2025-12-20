@@ -6,6 +6,17 @@ import { placesTable } from "../tables/places";
 import { notifyRefreshTrips } from "../utils/stateSync";
 import { getCurrentUserId } from "../utils/context";
 
+// Schema for cached search results
+const searchResultSchema = z.object({
+  placeId: z.string(),
+  name: z.string(),
+  address: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  rating: z.number(),
+  category: z.string(),
+});
+
 /**
  * Main chat conversation handler for the travel copilot.
  * Handles webchat messages and provides AI-powered travel planning assistance.
@@ -16,11 +27,18 @@ export const Chat = new Conversation({
   // Per-conversation state
   state: z.object({
     messageCount: z.number().default(0),
+    // Cache last search results so we can add places without re-searching
+    lastSearchResults: z.array(searchResultSchema).default([]),
   }),
 
   async handler({ message, state, conversation, execute }) {
     // Track message count
     state.messageCount += 1;
+
+    // Initialize lastSearchResults if not present (for existing conversations)
+    if (!state.lastSearchResults) {
+      state.lastSearchResults = [];
+    }
 
     // Notify frontend to refresh on first message
     if (state.messageCount === 1) {
@@ -86,6 +104,18 @@ export const Chat = new Conversation({
         ? places.map((p) => `- ${p.name} (${p.category || "place"}, ID: ${p.id})`).join("\n")
         : "No places added yet";
 
+    // Build cached search results context (with fallback for existing conversations)
+    const lastSearchResults = state.lastSearchResults || [];
+    const cachedResultsSummary =
+      lastSearchResults.length > 0
+        ? lastSearchResults
+            .map(
+              (r, i) =>
+                `${i + 1}. "${r.name}" - address: "${r.address}", placeId: ${r.placeId}, lat: ${r.latitude}, lng: ${r.longitude}, category: ${r.category}, rating: ${r.rating}`
+            )
+            .join("\n")
+        : "None";
+
     // Use AI to handle the message with trip and place tools
     await execute({
       hooks: {
@@ -97,6 +127,18 @@ export const Chat = new Conversation({
           if (tool.name === "createTrip" && output?.success && output?.tripId) {
             user.state.selectedTripId = output.tripId;
           }
+          // Cache search results for later use
+          if (tool.name === "searchPlaces" && output?.results) {
+            state.lastSearchResults = output.results.map((r: Record<string, unknown>) => ({
+              placeId: r.placeId,
+              name: r.name,
+              address: r.address,
+              latitude: r.latitude,
+              longitude: r.longitude,
+              rating: r.rating || 0,
+              category: r.category || "place",
+            }));
+          }
         },
       },
       instructions: `You are Travel Copilot, a friendly travel planning assistant.
@@ -105,6 +147,9 @@ export const Chat = new Conversation({
 - Selected trip: ${selectedTrip ? `"${selectedTrip.name}" (ID: ${selectedTrip.id})` : "None"}
 - User's trips: ${tripCount === 0 ? "None yet" : trips.map((t) => `${t.name} (ID: ${t.id})`).join(", ")}
 ${selectedTrip && places.length > 0 ? `- Places in trip: ${places.map((p) => p.name).join(", ")}` : ""}
+
+## Recent search results (USE THESE - do not search again!)
+${cachedResultsSummary}
 
 ## What you can do
 - **Trips**: Create, list, select, update, delete trips
@@ -117,10 +162,10 @@ ${selectedTrip && places.length > 0 ? `- Places in trip: ${places.map((p) => p.n
 
 3. **Adding places**: Use tripId: ${selectedTrip?.id || "none"}. If no trip selected, ask user to select one first.
 
-## IMPORTANT
+## CRITICAL RULES
 - Use markdown for formatting (e.g., **bold**, *italic*), NOT HTML tags.
 - When searching for places with searchPlaces, DO NOT list or describe the results in your response. The results are automatically displayed as interactive cards in the UI. Just say something brief like "Here are some options:".
-- CRITICAL: When adding places that were just shown in search results, use the place data from those results. DO NOT search again - you already have the info. Only search for new things.
+- **NEVER search again for places that are in "Recent search results" above.** If the user wants to add a place from those results, use addPlace directly with the data shown above. Only call searchPlaces for NEW searches.
 
 Keep responses concise. Only call each tool once per response.`,
       tools: [...tripTools, ...placeTools],

@@ -69,12 +69,13 @@
 }
 
 .place-marker__pin {
-  animation: marker-bounce 0.3s ease-out;
+  /* No animation on regular markers to prevent re-triggering on re-renders */
 }
 
-/* Preview marker - pulsing effect */
+/* Preview marker - distinct color + pulsing effect (no bounce, just pulse) */
 .place-marker--preview .place-marker__pin {
-  animation: marker-bounce 0.3s ease-out, marker-pulse 1.5s ease-in-out infinite;
+  background-color: #667eea !important;
+  animation: marker-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes marker-pulse {

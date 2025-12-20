@@ -1,13 +1,28 @@
-/* Card - no border/bg since webchat provides container */
+/* Card - interactive with hover state */
 .place-suggestion-card {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px 0;
+  padding: 12px;
+  margin: 0 -12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.place-suggestion-card:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.place-suggestion-card:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .place-suggestion-card:not(:last-child) {
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 4px;
 }
 
 /* Photo thumbnail */

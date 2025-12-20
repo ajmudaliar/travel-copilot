@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, ExternalLink, Plus, Check, UtensilsCrossed, Coffee, Hotel, Camera } from "lucide-react";
+import { ExternalLink, Plus, Check, UtensilsCrossed, Coffee, Hotel, MapPin, Camera } from "lucide-react";
 import { useTravelStore } from "../stores/travelStore";
 import { useTripData } from "../hooks/useTripData";
 import "./PlaceSuggestionCard.css";
@@ -36,7 +36,20 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
   const setPreviewPlace = useTravelStore((state) => state.setPreviewPlace);
   const { fetchPlaces, addPlaceToTrip } = useTripData();
 
-  const handleShowOnMap = () => {
+  // Show preview marker on hover (stays until user clicks map)
+  const handleMouseEnter = () => {
+    setPreviewPlace({
+      name: place.name,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      category: place.category,
+      photoUrl: place.photoUrl,
+      rating: place.rating,
+    });
+  };
+
+  // Pan and zoom to location on click
+  const handleCardClick = () => {
     setPreviewPlace({
       name: place.name,
       latitude: place.latitude,
@@ -84,8 +97,18 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
 
   const placeholderIcon = CATEGORY_ICONS[place.category] || CATEGORY_ICONS.default;
 
+  // Stop event propagation for action buttons
+  const handleButtonClick = (e: React.MouseEvent, handler: () => void) => {
+    e.stopPropagation();
+    handler();
+  };
+
   return (
-    <div className="place-suggestion-card">
+    <div
+      className="place-suggestion-card"
+      onMouseEnter={handleMouseEnter}
+      onClick={handleCardClick}
+    >
       <div className="place-suggestion-card__photo">
         {place.photoUrl ? (
           <img src={place.photoUrl} alt={place.name} />
@@ -106,15 +129,16 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
       </div>
 
       <div className="place-suggestion-card__actions">
-        <button className="place-suggestion-card__btn" onClick={handleShowOnMap} title="Show on map">
-          <MapPin size={14} />
-        </button>
-        <button className="place-suggestion-card__btn" onClick={handleOpenGoogleMaps} title="Open in Google Maps">
+        <button
+          className="place-suggestion-card__btn"
+          onClick={(e) => handleButtonClick(e, handleOpenGoogleMaps)}
+          title="Open in Google Maps"
+        >
           <ExternalLink size={14} />
         </button>
         <button
           className={`place-suggestion-card__btn place-suggestion-card__btn--add ${isAdded ? "place-suggestion-card__btn--added" : ""}`}
-          onClick={handleAddToTrip}
+          onClick={(e) => handleButtonClick(e, handleAddToTrip)}
           disabled={!tripId || isAdded || isAdding}
           title={!tripId ? "Select a trip first" : isAdded ? "Added" : "Add to trip"}
         >
