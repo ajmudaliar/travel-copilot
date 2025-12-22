@@ -1,5 +1,6 @@
 import { Autonomous, z } from "@botpress/runtime";
 import { tripsTable } from "../tables/trips";
+import { placesTable } from "../tables/places";
 import { notifyRefreshTrips, notifySelectTrip } from "../utils/stateSync";
 import { getCurrentUserId } from "../utils/context";
 
@@ -327,7 +328,17 @@ export const deleteTripTool = new Autonomous.Tool({
 
       const tripName = existing.rows[0]?.name;
 
-      // Delete from table
+      // Delete associated places first
+      const placesResult = await placesTable.findRows({
+        filter: { tripId: { $eq: input.tripId } },
+      });
+
+      if (placesResult.rows.length > 0) {
+        const placeIds = placesResult.rows.map((p) => p.id);
+        await placesTable.deleteRowIds(placeIds);
+      }
+
+      // Delete the trip
       await tripsTable.deleteRowIds([Number(input.tripId)]);
 
       // Notify frontend to refresh
