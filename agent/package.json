@@ -10,7 +10,7 @@
     "deploy": "adk deploy"
   },
   "dependencies": {
-    "@botpress/runtime": "^1.11.2",
+    "@botpress/runtime": "^1.13.7",
     "dotenv": "^17.2.3"
   },
   "devDependencies": {

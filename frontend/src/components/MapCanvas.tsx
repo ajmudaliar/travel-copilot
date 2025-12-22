@@ -63,6 +63,59 @@ function createClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
   });
 }
 
+// Preview marker component that auto-opens popup
+interface PreviewMarkerProps {
+  place: {
+    name: string;
+    latitude: number;
+    longitude: number;
+    category?: string;
+    photoUrl?: string;
+    rating?: number;
+  };
+}
+
+function PreviewMarker({ place }: PreviewMarkerProps) {
+  const markerRef = useRef<L.Marker>(null);
+
+  useEffect(() => {
+    // Auto-open popup when marker appears
+    if (markerRef.current) {
+      markerRef.current.openPopup();
+    }
+  }, [place]);
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={[place.latitude, place.longitude]}
+      icon={createPlaceIcon(place.category, true)}
+    >
+      <Popup>
+        <div className="place-popup">
+          {place.photoUrl && (
+            <div className="place-popup__photo">
+              <img src={place.photoUrl} alt={place.name} />
+            </div>
+          )}
+          <h4 className="place-popup__name">{place.name}</h4>
+          {(place.category || place.rating) && (
+            <div className="place-popup__meta">
+              {place.category && (
+                <span className="place-popup__category">{place.category}</span>
+              )}
+              {place.rating && place.rating > 0 && (
+                <span className="place-popup__rating">★ {place.rating.toFixed(1)}</span>
+              )}
+            </div>
+          )}
+          <p className="place-popup__hint">Click + in chat to add to trip</p>
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
+
 // Component to handle map view changes and events
 function MapController() {
   const map = useMap();
@@ -197,35 +250,8 @@ export function MapCanvas() {
         ))}
       </MarkerClusterGroup>
 
-      {/* Preview marker (from chat suggestions) */}
-      {previewPlace && (
-        <Marker
-          position={[previewPlace.latitude, previewPlace.longitude]}
-          icon={createPlaceIcon(previewPlace.category, true)}
-        >
-          <Popup>
-            <div className="place-popup">
-              {previewPlace.photoUrl && (
-                <div className="place-popup__photo">
-                  <img src={previewPlace.photoUrl} alt={previewPlace.name} />
-                </div>
-              )}
-              <h4 className="place-popup__name">{previewPlace.name}</h4>
-              {(previewPlace.category || previewPlace.rating) && (
-                <div className="place-popup__meta">
-                  {previewPlace.category && (
-                    <span className="place-popup__category">{previewPlace.category}</span>
-                  )}
-                  {previewPlace.rating && previewPlace.rating > 0 && (
-                    <span className="place-popup__rating">★ {previewPlace.rating.toFixed(1)}</span>
-                  )}
-                </div>
-              )}
-              <p className="place-popup__hint">Click + in chat to add to trip</p>
-            </div>
-          </Popup>
-        </Marker>
-      )}
+      {/* Preview marker (from chat suggestions) - auto-opens popup */}
+      {previewPlace && <PreviewMarker place={previewPlace} />}
     </MapContainer>
   );
 }
