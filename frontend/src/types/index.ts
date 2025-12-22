@@ -12,6 +12,11 @@ export interface Trip {
   zoomLevel: number;
   createdAt: string;
   updatedAt: string;
+  // Sharing fields
+  isShared?: boolean;
+  shareCode?: string;
+  sharePermission?: "view" | "edit";
+  isOwner?: boolean; // Computed on frontend based on userId
 }
 
 export interface Place {

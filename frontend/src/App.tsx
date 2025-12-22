@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { Toaster } from "sonner";
 import { ChatSidebar } from "./components/ChatSidebar";
 import { TripList } from "./components/TripList";
 import { TripDetail } from "./components/TripDetail";
@@ -84,6 +85,8 @@ function App() {
 
   return (
     <div className="app-container">
+      <Toaster position="bottom-left" richColors closeButton />
+
       {/* Main content area with map */}
       <main className="main-content">
         {/* Map */}

@@ -43,6 +43,10 @@ export function useTripData() {
         zoomLevel: row.zoomLevel as number,
         createdAt: row.createdAt || new Date().toISOString(),
         updatedAt: row.updatedAt || new Date().toISOString(),
+        isShared: row.isShared as boolean | undefined,
+        shareCode: row.shareCode as string | undefined,
+        sharePermission: row.sharePermission as "view" | "edit" | undefined,
+        isOwner: row.userId === userId,
       }));
 
       setTrips(trips);

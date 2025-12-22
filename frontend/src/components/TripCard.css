@@ -18,12 +18,22 @@
 }
 
 .trip-row__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.9rem;
   color: #374151;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.trip-row__shared-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #667eea;
+  opacity: 0.7;
 }
 
 .trip-row--selected .trip-row__name {

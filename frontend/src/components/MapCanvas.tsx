@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTravelStore } from "../stores/travelStore";
@@ -49,6 +50,18 @@ function createPlaceIcon(category?: string, isPreview = false): L.DivIcon {
 // Default center (world view) and zoom
 const DEFAULT_CENTER: [number, number] = [20, 0];
 const DEFAULT_ZOOM = 2;
+
+// Custom cluster icon
+function createClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? "small" : count < 50 ? "medium" : "large";
+
+  return L.divIcon({
+    html: `<div class="cluster-marker cluster-marker--${size}"><span>${count}</span></div>`,
+    className: "cluster-marker-container",
+    iconSize: L.point(40, 40, true),
+  });
+}
 
 // Component to handle map view changes and events
 function MapController() {
@@ -147,34 +160,42 @@ export function MapCanvas() {
         </Marker>
       ))}
 
-      {/* Place markers for selected trip */}
-      {tripPlaces.map((place) => (
-        <Marker
-          key={place.id}
-          position={[place.latitude, place.longitude]}
-          icon={createPlaceIcon(place.category)}
-        >
-          <Popup>
-            <div className="place-popup">
-              {place.photoUrl && (
-                <div className="place-popup__photo">
-                  <img src={place.photoUrl} alt={place.name} />
+      {/* Place markers for selected trip (clustered) */}
+      <MarkerClusterGroup
+        chunkedLoading
+        iconCreateFunction={createClusterIcon}
+        maxClusterRadius={50}
+        spiderfyOnMaxZoom
+        showCoverageOnHover={false}
+      >
+        {tripPlaces.map((place) => (
+          <Marker
+            key={place.id}
+            position={[place.latitude, place.longitude]}
+            icon={createPlaceIcon(place.category)}
+          >
+            <Popup>
+              <div className="place-popup">
+                {place.photoUrl && (
+                  <div className="place-popup__photo">
+                    <img src={place.photoUrl} alt={place.name} />
+                  </div>
+                )}
+                <h4 className="place-popup__name">{place.name}</h4>
+                <div className="place-popup__meta">
+                  {place.category && (
+                    <span className="place-popup__category">{place.category}</span>
+                  )}
+                  {place.rating && (
+                    <span className="place-popup__rating">★ {place.rating.toFixed(1)}</span>
+                  )}
                 </div>
-              )}
-              <h4 className="place-popup__name">{place.name}</h4>
-              <div className="place-popup__meta">
-                {place.category && (
-                  <span className="place-popup__category">{place.category}</span>
-                )}
-                {place.rating && (
-                  <span className="place-popup__rating">★ {place.rating.toFixed(1)}</span>
-                )}
+                <p className="place-popup__address">{place.address}</p>
               </div>
-              <p className="place-popup__address">{place.address}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
 
       {/* Preview marker (from chat suggestions) */}
       {previewPlace && (

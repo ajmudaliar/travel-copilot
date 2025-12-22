@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ExternalLink, Plus, Check, UtensilsCrossed, Coffee, Hotel, MapPin, Camera } from "lucide-react";
+import { toast } from "sonner";
+import { ExternalLink, Plus, Check, Loader2, UtensilsCrossed, Coffee, Hotel, MapPin, Camera } from "lucide-react";
 import { useTravelStore } from "../stores/travelStore";
 import { useTripData } from "../hooks/useTripData";
 import "./PlaceSuggestionCard.css";
@@ -13,6 +14,7 @@ export interface PlaceSuggestion {
   rating: number;
   category: string;
   photoUrl?: string;
+  distanceKm?: number;
 }
 
 interface PlaceSuggestionCardProps {
@@ -88,9 +90,13 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
       if (result.success) {
         setIsAdded(true);
         fetchPlaces(tripId);
+        toast.success(`Added "${place.name}" to your trip`);
+      } else {
+        toast.error(result.error || "Failed to add place");
       }
     } catch (error) {
       console.error("Error adding place:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsAdding(false);
     }
@@ -125,6 +131,13 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
           {place.rating > 0 && (
             <span className="place-suggestion-card__rating">★ {place.rating.toFixed(1)}</span>
           )}
+          {place.distanceKm !== undefined && (
+            <span className="place-suggestion-card__distance">
+              {place.distanceKm < 1
+                ? `${Math.round(place.distanceKm * 1000)}m`
+                : `${place.distanceKm.toFixed(1)}km`}
+            </span>
+          )}
         </div>
         <p className="place-suggestion-card__address">{place.address}</p>
       </div>
@@ -138,12 +151,12 @@ export function PlaceSuggestionCard({ place, tripId }: PlaceSuggestionCardProps)
           <ExternalLink size={14} />
         </button>
         <button
-          className={`place-suggestion-card__btn place-suggestion-card__btn--add ${isAdded ? "place-suggestion-card__btn--added" : ""}`}
+          className={`place-suggestion-card__btn place-suggestion-card__btn--add ${isAdded ? "place-suggestion-card__btn--added" : ""} ${isAdding ? "place-suggestion-card__btn--loading" : ""}`}
           onClick={(e) => handleButtonClick(e, handleAddToTrip)}
           disabled={!tripId || isAdded || isAdding}
           title={!tripId ? "Select a trip first" : isAdded ? "Added" : "Add to trip"}
         >
-          {isAdded ? <Check size={14} /> : <Plus size={14} />}
+          {isAdding ? <Loader2 size={14} className="spin" /> : isAdded ? <Check size={14} /> : <Plus size={14} />}
         </button>
       </div>
     </div>

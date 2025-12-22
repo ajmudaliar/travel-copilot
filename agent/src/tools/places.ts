@@ -2,7 +2,8 @@ import { Autonomous, z, context, user } from "@botpress/runtime";
 import { placesTable } from "../tables/places";
 import { tripsTable } from "../tables/trips";
 import { notifyRefreshPlaces } from "../utils/stateSync";
-import { isGooglePlacesConfigured, searchGooglePlaces } from "../utils/googlePlaces";
+import { isGooglePlacesConfigured, searchGooglePlaces, geocodeLocation } from "../utils/googlePlaces";
+import { getCurrentUserId } from "../utils/context";
 
 /**
  * Place management tools for the AI to use in conversations.
@@ -20,6 +21,7 @@ interface PlaceSuggestion {
   rating: number;
   category: string;
   photoUrl?: string;
+  distanceKm?: number;
 }
 
 /**
@@ -217,6 +219,8 @@ export const listPlacesTool = new Autonomous.Tool({
 
   input: z.object({
     tripId: z.string().describe("The ID of the trip to list places for"),
+    limit: z.number().optional().describe("Max results (default 100)"),
+    offset: z.number().optional().describe("Skip first N results"),
   }),
 
   output: z.object({
@@ -230,15 +234,24 @@ export const listPlacesTool = new Autonomous.Tool({
       })
     ),
     count: z.number(),
+    hasMore: z.boolean(),
   }),
 
   async handler(input) {
     try {
+      const limit = input.limit ?? 100;
+      const offset = input.offset ?? 0;
+
       const result = await placesTable.findRows({
         filter: { tripId: { $eq: input.tripId } },
+        limit: limit + 1,
+        offset,
       });
 
-      const places = result.rows.map((row) => ({
+      const hasMore = result.rows.length > limit;
+      const rows = hasMore ? result.rows.slice(0, limit) : result.rows;
+
+      const places = rows.map((row) => ({
         id: String(row.id),
         name: row.name,
         address: row.address,
@@ -249,10 +262,11 @@ export const listPlacesTool = new Autonomous.Tool({
       return {
         places,
         count: places.length,
+        hasMore,
       };
     } catch (error) {
       console.error("Error listing places:", error);
-      return { places: [], count: 0 };
+      return { places: [], count: 0, hasMore: false };
     }
   },
 });
@@ -373,12 +387,14 @@ const MOCK_PLACES: Record<string, Array<{
  */
 export const searchPlacesTool = new Autonomous.Tool({
   name: "searchPlaces",
-  description: "Search for places like restaurants, cafes, hotels, bars, or attractions.",
+  description: "Search for places like restaurants, cafes, hotels, bars, or attractions. Can find closest places to a specific location.",
 
   input: z.object({
     query: z.string().describe("Full search query including location context, e.g., 'coffee shops in Old Montreal' or 'bars near Peel Street'"),
     category: z.string().optional().describe("Category: restaurant, cafe, hotel, bar, attraction"),
     nearCity: z.string().optional().describe("City name for context"),
+    count: z.number().default(5).describe("Number of results to return (default 5, max 20)"),
+    nearLocation: z.string().optional().describe("Find closest places to this location, e.g., 'Times Square', 'Hilton Hotel NYC', 'Central Park'"),
   }),
 
   output: z.object({
@@ -392,6 +408,7 @@ export const searchPlacesTool = new Autonomous.Tool({
         rating: z.number(),
         category: z.string(),
         photoUrl: z.string().optional().describe("Photo URL - pass this to addPlace"),
+        distanceKm: z.number().optional().describe("Distance from reference point in km"),
       })
     ),
     count: z.number(),
@@ -402,22 +419,63 @@ export const searchPlacesTool = new Autonomous.Tool({
     // Get current selected trip ID for the suggestion cards
     const selectedTripId = user.state.selectedTripId;
 
+    // Clamp count to valid range
+    const maxResults = Math.min(20, Math.max(1, input.count || 5));
+
+    // Get selected trip's coordinates for location bias
+    let locationBias: { latitude: number; longitude: number } | undefined;
+    if (selectedTripId) {
+      const tripResult = await tripsTable.findRows({
+        filter: { id: { $eq: Number(selectedTripId) } },
+        limit: 1,
+      });
+      if (tripResult.rows.length > 0) {
+        const trip = tripResult.rows[0];
+        locationBias = {
+          latitude: trip.centerLatitude,
+          longitude: trip.centerLongitude,
+        };
+      }
+    }
+
+    // Geocode nearLocation if provided (for "closest to X" queries)
+    let sortByDistanceFrom: { latitude: number; longitude: number } | undefined;
+    if (input.nearLocation) {
+      // Add city context for better geocoding
+      const locationQuery = input.nearCity
+        ? `${input.nearLocation}, ${input.nearCity}`
+        : input.nearLocation;
+      const coords = await geocodeLocation(locationQuery);
+      if (coords) {
+        sortByDistanceFrom = coords;
+        // Also use this as location bias for better results
+        locationBias = coords;
+      }
+    }
+
     // Try Google Places API first
     if (isGooglePlacesConfigured()) {
       try {
         const { results, count } = await searchGooglePlaces(
           input.query,
           input.category,
-          input.nearCity
+          input.nearCity,
+          locationBias,
+          maxResults,
+          sortByDistanceFrom
         );
 
         // Send place suggestions to frontend as custom message
         await sendPlaceSuggestions(results, selectedTripId);
 
+        const note = sortByDistanceFrom
+          ? `Found ${count} places sorted by distance from ${input.nearLocation}. Results displayed in chat.`
+          : `Found ${count} places. Results displayed in chat.`;
+
         return {
           results,
           count,
-          note: "Results displayed in chat. User can click to add places to their trip.",
+          note,
         };
       } catch (error) {
         console.error("Google Places API failed, falling back to mock:", error);
@@ -472,8 +530,8 @@ export const searchPlacesTool = new Autonomous.Tool({
       }
     }
 
-    // Add empty placeId for mock data (Google Places UI Kit won't work without real IDs)
-    const resultsWithPlaceId = results.map((r) => ({
+    // Add empty placeId for mock data and limit to maxResults
+    const resultsWithPlaceId = results.slice(0, maxResults).map((r) => ({
       placeId: "",
       ...r,
     }));
@@ -484,7 +542,7 @@ export const searchPlacesTool = new Autonomous.Tool({
     return {
       results: resultsWithPlaceId,
       count: resultsWithPlaceId.length,
-      note: "Results displayed in chat (mock data - Google Places UI won't show photos). User can click to add places.",
+      note: `Found ${resultsWithPlaceId.length} places (mock data). Results displayed in chat.`,
     };
   },
 });

@@ -16,6 +16,7 @@ const searchResultSchema = z.object({
   rating: z.number(),
   category: z.string(),
   photoUrl: z.string().optional(),
+  distanceKm: z.number().optional(),
 });
 
 /**
@@ -46,12 +47,23 @@ export const Chat = new Conversation({
       await notifyRefreshTrips();
     }
 
-    // Query trips from table for context (filtered by user)
+    // Query trips from table for context (filtered by user - owned + shared)
     const userId = getCurrentUserId();
-    const tripsResult = await tripsTable.findRows({
+    const ownedTripsResult = await tripsTable.findRows({
       filter: { userId: { $eq: userId } },
     });
-    const trips = tripsResult.rows;
+
+    // Also get trips where user is a collaborator
+    const sharedTripsResult = await tripsTable.findRows({
+      filter: { isShared: { $eq: true } },
+      limit: 50,
+    });
+    const collaboratorTrips = sharedTripsResult.rows.filter(
+      (row) => row.collaborators?.includes(userId) && row.userId !== userId
+    );
+
+    // Combine owned + shared trips
+    const trips = [...ownedTripsResult.rows, ...collaboratorTrips];
     const tripCount = trips.length;
 
     // Find selected trip from user state (persists across conversations)
@@ -59,6 +71,11 @@ export const Chat = new Conversation({
     const selectedTrip = selectedTripId
       ? trips.find((t) => String(t.id) === selectedTripId)
       : undefined;
+
+    // Check if user owns or is collaborator on selected trip
+    const isOwner = selectedTrip?.userId === userId;
+    const isCollaborator = selectedTrip?.collaborators?.includes(userId);
+    const canEdit = isOwner || (isCollaborator && selectedTrip?.sharePermission === "edit");
 
     // Query places for selected trip
     let places: typeof placesTable.inferRow[] = [];
@@ -139,6 +156,7 @@ export const Chat = new Conversation({
               rating: r.rating || 0,
               category: r.category || "place",
               photoUrl: r.photoUrl,
+              distanceKm: r.distanceKm,
             }));
           }
         },
@@ -146,8 +164,9 @@ export const Chat = new Conversation({
       instructions: `You are Travel Copilot, a friendly travel planning assistant.
 
 ## Context
-- Selected trip: ${selectedTrip ? `"${selectedTrip.name}" (ID: ${selectedTrip.id})` : "None"}
-- User's trips: ${tripCount === 0 ? "None yet" : trips.map((t) => `${t.name} (ID: ${t.id})`).join(", ")}
+- Selected trip: ${selectedTrip ? `"${selectedTrip.name}" (ID: ${selectedTrip.id})${selectedTrip.isShared ? ` [Shared: ${selectedTrip.shareCode}]` : ""}` : "None"}
+- Your role: ${selectedTrip ? (isOwner ? "Owner" : isCollaborator ? `Collaborator (${selectedTrip.sharePermission})` : "None") : "N/A"}
+- User's trips: ${tripCount === 0 ? "None yet" : trips.map((t) => `${t.name} (ID: ${t.id})${t.isShared ? " 🔗" : ""}`).join(", ")}
 ${selectedTrip && places.length > 0 ? `- Places in trip: ${places.map((p) => p.name).join(", ")}` : ""}
 
 ## Recent search results (USE THESE - do not search again!)
@@ -156,19 +175,25 @@ ${cachedResultsSummary}
 ## What you can do
 - **Trips**: Create, list, select, update, delete trips
 - **Places**: Search for places, add them to trips, list/remove places
+- **Sharing**: Share trips with others, join shared trips with a code
 
 ## Key behaviors
 1. **Creating trips**: Use createTrip with the city name. Set coordinates (e.g., Paris: 48.8566, 2.3522; NYC: 40.7128, -74.0060; SF: 37.7749, -122.4194). Estimate for other cities.
 
-2. **Deleting trips**: Confirm with user first.
+2. **Deleting trips**: Confirm with user first. Only owners can delete.
 
-3. **Adding places**: Use tripId: ${selectedTrip?.id || "none"}. If no trip selected, ask user to select one first.
+3. **Adding places**: Use tripId: ${selectedTrip?.id || "none"}. ${canEdit ? "You can add places." : selectedTrip ? "This is a view-only trip." : "Select a trip first."}
+
+4. **Sharing trips**: Use shareTrip to get a 6-character code. Others use joinTrip with the code. Use unshareTrip to revoke.
+
+5. **Joining trips**: When user provides a code like "ABC123", use joinTrip to add the trip to their list.
 
 ## CRITICAL RULES
 - **Preserve user specificity**: When the user mentions specific locations, streets, neighborhoods, or landmarks, ALWAYS include them in your tool calls. Never generalize or drop details. Example: "bars near Peel" → search for "bars near Peel Street Montreal", NOT just "bars".
 - Use markdown for formatting (e.g., **bold**, *italic*), NOT HTML tags.
 - When searching for places with searchPlaces, DO NOT list or describe the results in your response. The results are automatically displayed as interactive cards in the UI. Just say something brief like "Here are some options:".
 - **NEVER search again for places that are in "Recent search results" above.** If the user wants to add a place from those results, use addPlace directly with the data shown above. Only call searchPlaces for NEW searches.
+- For view-only shared trips, don't allow adding/removing places - inform the user they need edit permission.
 
 Keep responses concise. Only call each tool once per response.`,
       tools: [...tripTools, ...placeTools],
