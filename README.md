@@ -2,7 +2,7 @@
 
 A conversational travel planning application built with **Botpress ADK** and **React**. This example demonstrates how to build a full-stack AI application with real-time state synchronization between an AI agent and a custom frontend.
 
-https://github.com/ajmudaliar/travel-copilot/raw/main/assets/demo.mp4
+https://github.com/user-attachments/assets/53a278a8-03f9-4fc9-bc04-3c97a966ce7c
 
 ## Features
 
