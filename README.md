@@ -2,7 +2,7 @@
 
 A conversational travel planning application built with **Botpress ADK** and **React**. This example demonstrates how to build a full-stack AI application with real-time state synchronization between an AI agent and a custom frontend.
 
-<video src="./assets/demo.mp4" controls width="100%"></video>
+https://github.com/ajmudaliar/travel-copilot/raw/main/assets/demo.mp4
 
 ## Features
 
@@ -19,10 +19,10 @@ A conversational travel planning application built with **Botpress ADK** and **R
 graph TB
     subgraph Frontend["React Frontend"]
         UI[App Layout]
-        Chat[Chat Sidebar<br/>@botpress/webchat]
-        Map[Map Canvas<br/>Leaflet]
-        Trips[Trip Panel<br/>TripList + TripDetail]
-        Store[Zustand Store<br/>travelStore]
+        Chat[Chat Sidebar]
+        Map[Map Canvas]
+        Trips[Trip Panel]
+        Store[Zustand Store]
 
         UI --> Chat
         UI --> Map
@@ -34,9 +34,9 @@ graph TB
 
     subgraph Agent["Botpress ADK Agent"]
         Conv[Conversation Handler]
-        Tools[AI Tools<br/>trips.ts, places.ts]
-        Tables[(Tables<br/>tripsTable, placesTable)]
-        Utils[Utilities<br/>stateSync, googlePlaces]
+        Tools[AI Tools]
+        Tables[(Tables)]
+        Utils[Utilities]
 
         Conv --> Tools
         Tools --> Tables
@@ -48,11 +48,11 @@ graph TB
         BP[Botpress Cloud]
     end
 
-    Chat <-->|Webchat Client| BP
-    BP <-->|Messages + Events| Conv
-    Utils -->|Custom Events| Chat
-    Utils -->|Text Search API| Google
-    Store -->|@botpress/client| Tables
+    Chat <-->|Webchat| BP
+    BP <-->|Messages| Conv
+    Utils -->|Events| Chat
+    Utils -->|API| Google
+    Store -->|Client| Tables
 ```
 
 ## Data Flow
